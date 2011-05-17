@@ -1,0 +1,8 @@
+type: txt
+help: Set FreeSWITCH mode of operation
+syntax:expression: $VAR(@) in "proxy", "pbx", "server";
+                   "Must be \"proxy\", \"pbx\", or \"server\""
+comp_help: Possible completions:
+  proxy     Use proxy mode
+  pbx       Act as pbx mode
+  server    Act as server in client-server mode

@@ -1,0 +1,8 @@
+The Debian Package vyatta-sip-freeswitch
+---------------------------------
+
+This package has the Vyatta configuration/operational templates and scripts
+for the FreeSWITCH feature.
+
+ -- Oleg Dolya <oleg.dolya@vyatta.com> Thu, 12 May 2011
+

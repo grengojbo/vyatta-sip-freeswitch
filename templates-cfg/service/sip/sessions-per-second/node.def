@@ -1,0 +1,5 @@
+type: u32
+default: 30
+help: Most channels to create per second
+syntax:expression: $VAR(@) > 0 && $VAR(@) < 65536;
+                   "Port must be between 1 and 65535"

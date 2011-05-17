@@ -1,0 +1,16 @@
+#!/bin/bash
+
+prefix=/opt/vyatta
+exec_prefix=${prefix}
+sysconfdir=${prefix}/etc
+bindir=${exec_prefix}/bin
+sbindir=${exec_prefix}/sbin
+
+# remove init of daemons that we start/stop
+for init in freeswitch; do
+  update-rc.d -f ${init} remove >/dev/null
+done
+
+mkdir -p /opt/vyatta/etc/freeswitch/ccd
+mkdir -p /opt/vyatta/etc/freeswitch/status
+

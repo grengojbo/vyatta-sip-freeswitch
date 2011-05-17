@@ -1,0 +1,2 @@
+vyatta-sip-freeswitch: file-in-unusual-dir
+vyatta-sip-freeswitch: dir-or-file-in-opt

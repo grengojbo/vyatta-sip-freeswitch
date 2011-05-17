@@ -1,0 +1,4 @@
+type: txt
+default: "no"
+help: Set FreeSWITCH dump-cores
+syntax:expression: $VAR(@) in "yes", "no"

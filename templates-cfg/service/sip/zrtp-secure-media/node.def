@@ -1,0 +1,4 @@
+type: txt
+default: "enable"
+help: Enable ZRTP globally you can override this on a per channel basis
+syntax:expression: $VAR(@) in "enable", "disable"

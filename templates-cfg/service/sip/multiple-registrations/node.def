@@ -1,0 +1,4 @@
+type: txt
+default: "disable"
+help: Allow multiple registrations to the same account in the central registration table 
+syntax:expression: $VAR(@) in "enable", "disable"

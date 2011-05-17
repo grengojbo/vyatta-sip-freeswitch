@@ -1,0 +1,10 @@
+priority: 992
+type: txt
+help: Modules
+default: "GMT"
+comp_help:Enter the local timezone by specifying "Region/City"
+  Use auto-completion to see available regions and cities.
+  Start with one of these regions:
+    Africa      America   Antarctica   Arctic   Asia     Atlantic
+    Australia   Brazil    Canada       Chile    Europe   Indian
+    Mexico      Mideast   Pacific      US

@@ -1,0 +1,9 @@
+type: txt
+default: "internal"
+help: Set FreeSWITCH preset profile mode
+syntax:expression: $VAR(@) in "internal", "external", "ipv6";
+                   "Must be \"internal\", \"external\", or \"ipv6\""
+comp_help: Possible completions:
+  internal       Use internal preset
+  external       Act as external preset
+  ipv6           Act as ipv6 preset

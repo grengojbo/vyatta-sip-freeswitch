@@ -1,0 +1,4 @@
+type: u32
+default: 918
+help: Country areacode example from US 918
+syntax:expression: $VAR(@) > 0 && $VAR(@) < 65536

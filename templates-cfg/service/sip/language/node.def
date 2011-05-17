@@ -1,0 +1,9 @@
+type: txt
+default: "en"
+help: Set FreeSWITCH default language to IVR
+syntax:expression: $VAR(@) in "en", "ru", "de";
+                   "Must be \"en\", \"ru\", or \"de\""
+comp_help: Possible completions:
+  en    English
+  ru    Russian
+  de    Dutch

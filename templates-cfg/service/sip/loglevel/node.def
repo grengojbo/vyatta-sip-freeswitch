@@ -1,0 +1,5 @@
+type: txt
+default: "debug"
+help: Default Global Log Level
+syntax:expression: $VAR(@) in "debug", "info", "notice", "warning", "err", "crit", "alert";
+                   "value is one of debug,info,notice,warning,err,crit,alert"

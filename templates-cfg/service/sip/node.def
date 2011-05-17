@@ -1,0 +1,9 @@
+priority: 992
+help: Configuration open source telephony platform (SIP) for FreeSWITCH server or PBX
+delete:sudo sed -i -e '/^FREESWITCH_ENABLED="/s/true/false/' /etc/default/freeswitch
+    sudo /usr/sbin/invoke-rc.d freeswitch stop
+create:sudo sed -i -e '/^FREESWITCH_ENABLED="/s/false/true/' /etc/default/freeswitch
+    #sudo /opt/vyatta/sbin/vyatta-freeswitch.pl
+    sudo /usr/sbin/invoke-rc.d freeswitch start
+
+
