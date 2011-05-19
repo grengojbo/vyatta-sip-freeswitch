@@ -3,3 +3,7 @@ default: "debug"
 help: Default Global Log Level
 syntax:expression: $VAR(@) in "debug", "info", "notice", "warning", "err", "crit", "alert";
                    "value is one of debug,info,notice,warning,err,crit,alert"
+create:sudo /opt/vyatta/sbin/vyatta-freeswitch-vars console_loglevel $VAR(@)
+    sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --conf=switch
+update:sudo /opt/vyatta/sbin/vyatta-freeswitch-vars console_loglevel $VAR(@)
+    sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --conf=switch

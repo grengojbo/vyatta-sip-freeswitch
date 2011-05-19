@@ -1,4 +1,8 @@
 type: txt
-default: "enable"
+default: "true"
 help: Enable ZRTP globally you can override this on a per channel basis
-syntax:expression: $VAR(@) in "enable", "disable"
+syntax:expression: $VAR(@) in "true", "false"
+create:sudo /opt/vyatta/sbin/vyatta-freeswitch-vars zrtp_secure_media $VAR(@)
+    sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --conf=switch
+update:sudo /opt/vyatta/sbin/vyatta-freeswitch-vars zrtp_secure_media $VAR(@)
+    sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --conf=switch

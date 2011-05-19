@@ -4,6 +4,7 @@ share_perl5dir	 = $(datarootdir)/perl5/Vyatta/OpenVPN
 bin_sudo_usersdir = $(bindir)/sudo-users
 
 sbin_SCRIPTS = scripts/vyatta-freeswitch.pl
+sbin_SCRIPTS += scripts/vyatta-freeswitch-vars
 #sbin_SCRIPTS += scripts/vyatta-qos-up
 
 share_perl5_DATA = lib/Vyatta/FreeSWITCH/Config.pm

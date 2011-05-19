@@ -3,3 +3,5 @@ default: 1000
 help: Max number of sessions to allow at any given time
 syntax:expression: $VAR(@) > 0 && $VAR(@) < 65536;
                    "Port must be between 1 and 65535"
+create:sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --conf=switch
+update:sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --conf=switch

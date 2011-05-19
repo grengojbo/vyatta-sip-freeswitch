@@ -5,8 +5,7 @@ help: SIP domain name
 # Allow letter-number-hyphen in label (but can not start or end with hyphen)
 syntax:expression: pattern $VAR(@) "^[a-zA-Z0-9](([-a-zA-Z0-9]*[a-zA-Z0-9])?\.)*[a-zA-Z]+$" ; "invalid domain name $VAR(@)"
 
-# also add localhost line into /etc/hosts (see host-name template)?
-#update: sudo /opt/vyatta/sbin/vyatta_update_resolv.pl
-
-# also update localhost line in /etc/hosts (see host-name template)?
-#delete: sudo /opt/vyatta/sbin/vyatta_update_resolv.pl
+create:sudo /opt/vyatta/sbin/vyatta-freeswitch-vars domain $VAR(@);
+    sudo /opt/vyatta/sbin/vyatta-freeswitch-vars domain_name $VAR(@)
+update:sudo /opt/vyatta/sbin/vyatta-freeswitch-vars domain $VAR(@);
+    sudo /opt/vyatta/sbin/vyatta-freeswitch-vars domain_name $VAR(@)
