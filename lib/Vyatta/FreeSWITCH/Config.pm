@@ -30,6 +30,7 @@ my $fs_fs = $fs_conf_dir.'/freeswitch.xml';
 my $fs_modules = $fs_conf_dir.'/autoload_configs/modules.conf.xml';
 my $fs_switch = $fs_conf_dir.'/autoload_configs/switch.conf.xml';
 my $fs_event_socket = $fs_conf_dir.'/autoload_configs/event_socket.conf.xml';
+my $fs_acl = $fs_conf_dir.'/autoload_configs/acl.conf.xml';
 #my $status_dir = '/opt/vyatta/etc/openvpn/status';
 #my $status_itvl = 30;
 #my $ping_itvl = 10;
@@ -41,19 +42,22 @@ my %fields = (
   _domain_name  => undef,
   _description  => undef,
   _dump_cores   => undef,
-  _cli   => undef,
-  _cli_port   => undef,
-  _cli_address   => undef,
-  _cli_nat   => undef,
-  _cli_password   => undef,
-  #_cli_acl   => undef,
-  _codecs      => [],
-  _profile      => [],
-  _user         => [],
-  _language     => [],
   _loglevel     => undef,
   _max_sessions => undef,
   _mode         => undef,
+  _cli          => undef,
+  _cli_port     => undef,
+  _cli_address  => undef,
+  _cli_nat      => undef,
+  _cli_password => undef,
+  #_cli_acl      => undef,
+  _acl          => undef,
+  _acls         => [],
+  _acl_list         => [],
+  _codecs       => [],
+  _profile      => [],
+  _user         => [],
+  _language     => [],
   _modules      => [],
   _zrtp_secure_media      => undef,
   _default_language       => undef,
@@ -224,6 +228,24 @@ sub setup {
   $self->{_zrtp_secure_media} = $config->returnValue('zrtp-secure-media');
   my @tmp_user = $config->returnValues('_user');
   $self->{_user} = \@tmp_user;
+  my @tmp_acls = $config->listNodes('acl');
+  $self->{_acls} = \@tmp_acls;
+  if (scalar(@{$self->{_acls}}) > 0) {
+    $self->{_acl} = 1;
+    my @tmp_acl_node = ();
+    for my $c (@tmp_acls) {
+        my $d = $config->returnValue("acl $c default");
+        my @tmp_acl_adress = $config->listNodes("acl $c address");
+        my @ac = ();
+        for my $ad (@tmp_acl_adress) {
+          my $aa =$config->returnValue("acl $c address $ad action");
+          push @ac, { cidr=>$ad, type => $aa };  
+        }
+        push @tmp_acl_node, { name => $c, 'default'=> $d, node => \@ac };
+    }
+    $self->{_acl_list} = \@tmp_acl_node;
+  }
+ 
   #$self->{_options} = $config->returnValue('openvpn-option');
   #$self->{_secret_file} = $config->returnValue('shared-secret-key-file');
   #$self->{_server_subnet} = $config->returnValue('server subnet');
@@ -394,6 +416,17 @@ sub confSwitch {
     print "exec confSwitch\n";
 }
 
+sub confAcl {
+    my ($self) = @_;
+    print "exec confAcl\n";
+    my $fs_config = XMLin('<configuration name="acl.conf" description="Network Lists"><network-lists /></configuration>', KeyAttr=>{});
+    $fs_config->{'network-lists'}->{list} = \@{$self->{_acl_list}};
+    my $fs_config_new = XML::Simple->new(rootname=>'configuration');
+    open my $fh, '>:encoding(UTF-8)', $fs_switch or die "open($fs_switch): $!";
+    $fs_config_new->XMLout($fs_config, OutputFile=>$fh);
+    #print $fs_config_new->XMLout($fs_config);
+}
+
 sub show_modules {
     print join(' ', @modules_unsuport), "\n";
 }
@@ -408,12 +441,22 @@ sub show_codecs {
 
 sub showLanguage {
     my ($self) = @_;
-  if (scalar(@{$self->{_language}}) > 0) {
-      return (join(' ', @{$self->{_language}}), undef);
-  }
-  else {
-    return (undef, 'Must specify "language"')
-  }
+    if (scalar(@{$self->{_language}}) > 0) {
+        return (join(' ', @{$self->{_language}}), undef);
+    }
+    else {
+        return (undef, 'Must specify "language"')
+    }
+}
+
+sub showAcl {
+    my ($self) = @_;
+    if (defined($self->{_acl})) {
+        return ('rfc1918.auto nat.auto localnet.auto loopback.auto '.join(' ', @{$self->{_acls}}), undef);
+    }
+    else {
+        return ('rfc1918.auto nat.auto localnet.auto loopback.auto', undef);
+    }
 }
 
 1;

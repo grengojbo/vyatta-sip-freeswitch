@@ -48,8 +48,9 @@ my ($conf_name, $show_names);
 
 sub usage {
     print <<EOF;
-Usage: $0 --conf=<conf_name>
-       $0 --show=<type>
+Usage: $0 --conf=<acl|cli|switch|lang|modules>
+       $0 --show=<acl|codecs|lang|allowlang|modules>
+       $0 --reload=<xml|dialplan>
 EOF
     exit 1;
 }
@@ -83,7 +84,7 @@ sub fs_conf {
             $config->confSwitch();
         }
         elsif ($name eq 'acl') {
-            $config->confSwitch();
+            $config->confAcl();
         }
         elsif ($name eq 'lang') {
             $config->confLanguage();
@@ -117,6 +118,17 @@ sub fs_show {
         my $config = new Vyatta::FreeSWITCH::Config;
         $config->setup();
         my ($cmd, $err) = $config->showLanguage();
+        if (defined($err)) {
+            print STDERR "\nFreeSWITCH configuration error: $err.\n";
+            exit 1;
+        }
+        else {
+            print "$cmd\n";
+        }
+    }elsif ($name eq 'acl') {
+        my $config = new Vyatta::FreeSWITCH::Config;
+        $config->setup();
+        my ($cmd, $err) = $config->showAcl();
         if (defined($err)) {
             print STDERR "\nFreeSWITCH configuration error: $err.\n";
             exit 1;

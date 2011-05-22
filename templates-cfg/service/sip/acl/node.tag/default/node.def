@@ -1,0 +1,6 @@
+type: txt
+default: "deny"
+help: Default action
+syntax:expression: $VAR(@) in "deny", "allow"
+commit:expression: exec \
+    "sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --conf=acl"
