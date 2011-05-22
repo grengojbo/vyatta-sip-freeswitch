@@ -89,6 +89,10 @@ sub fs_conf {
             $config->confLanguage();
             $config->confModules();
         }
+        elsif ($name eq 'cli') {
+            $config->confCli();
+            $config->confModules();
+        }
         elsif ($name eq 'modules') {
             $config->confModules();
         }

@@ -1,0 +1,4 @@
+type: ipv4,ipv6
+help: Addresses as clients and connect to the FreeSWITCH server to invoke commands and control FreeSWITCH
+val_help: ipv4: IP address to listen for connections
+val_help: ipv6: IPv6 address to listen for connections

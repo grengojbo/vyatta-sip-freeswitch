@@ -1,0 +1,4 @@
+type: u32
+help: Port number to accept connections
+syntax:expression: $VAR(@) > 5000 && $VAR(@) < 10000;
+                   "Port must be between 5000 and 10000"

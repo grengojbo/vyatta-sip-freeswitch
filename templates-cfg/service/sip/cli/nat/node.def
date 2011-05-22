@@ -1,0 +1,4 @@
+type: txt
+default: "false"
+help: NAT Map
+syntax:expression: $VAR(@) in "false", "true"

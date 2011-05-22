@@ -29,6 +29,7 @@ my $fs_conf_dir = '/opt/freeswitch/conf';
 my $fs_fs = $fs_conf_dir.'/freeswitch.xml';
 my $fs_modules = $fs_conf_dir.'/autoload_configs/modules.conf.xml';
 my $fs_switch = $fs_conf_dir.'/autoload_configs/switch.conf.xml';
+my $fs_event_socket = $fs_conf_dir.'/autoload_configs/event_socket.conf.xml';
 #my $status_dir = '/opt/vyatta/etc/openvpn/status';
 #my $status_itvl = 30;
 #my $ping_itvl = 10;
@@ -40,6 +41,12 @@ my %fields = (
   _domain_name  => undef,
   _description  => undef,
   _dump_cores   => undef,
+  _cli   => undef,
+  _cli_port   => undef,
+  _cli_address   => undef,
+  _cli_nat   => undef,
+  _cli_password   => undef,
+  #_cli_acl   => undef,
   _codecs      => [],
   _profile      => [],
   _user         => [],
@@ -92,7 +99,7 @@ my %modules_codecs_hash = (
     #<!--<'' =>'mod_opus',-->
 );
 
-my @modules_unsuport = ('voicemail', 'xml_cdr', 'cli', 'curl', 'conference', 'perl', 'python', 'billing', 'enum', 'rpc', 'event-multicast', 'dingaling', 'portaudio', 'skinny', 'directory', 'distributor', 'lcr', 'spy', 'snom',   'dialplan-directory', 'dialplan-asterisk', 'shout', 'spidermonkey', 'flite', 'tts-commandline', 'rss', 'fifo'); 
+my @modules_unsuport = ('voicemail', 'xml_cdr', 'curl', 'conference', 'perl', 'python', 'billing', 'enum', 'rpc', 'event-multicast', 'dingaling', 'portaudio', 'skinny', 'directory', 'distributor', 'lcr', 'spy', 'snom',   'dialplan-directory', 'dialplan-asterisk', 'shout', 'spidermonkey', 'flite', 'tts-commandline', 'rss', 'fifo'); 
 my %modules_cmd_hash = (
     'voicemail' =>'mod_voicemail',
     'xml_cdr' =>'mod_xml_cdr',
@@ -193,6 +200,14 @@ sub setup {
   $self->{_description} = $config->returnValue('description');
   $self->{_domain_name} = $config->returnValue('domain-name');
   $self->{_dump_cores} = $config->returnValue('dump-cores');
+  $self->{_cli_address} = $config->returnValue('cli listen-address');
+  $self->{_cli_port} = $config->returnValue('cli listen-port');
+  $self->{_cli_nat} = $config->returnValue('cli nat');
+  $self->{_cli_password} = $config->returnValue('cli password');
+  #$self->{_cli_acl} = $config->returnValue('cli acl');
+  $self->{_cli} = (defined($self->{_cli_password})
+                       || defined($self->{_cli_address})
+                       || defined($self->{_cli_port})) ? 1 : undef;
   my @tmp_language = $config->returnValues('language');
   $self->{_language} = \@tmp_language;
   my @tmp_codecs = $config->returnValues('codecs');
@@ -245,6 +260,11 @@ sub get_command {
   return (undef, 'Must specify "language"') if (scalar(@{$self->{_language}}) == 0);
   return (undef, 'Must specify "default-language"') if (!defined($self->{_default_language}));
   return (undef, 'Must specify "codecs"') if (scalar(@{$self->{_codecs}}) == 0);
+  if (defined($self->{_cli})) {
+    return (undef, 'Must specify "set service sip cli password"') if (!defined($self->{_cli_password}));
+    return (undef, 'Must specify "set service sip cli listen-port"') if (!defined($self->{_cli_port}));
+    return (undef, 'Must specify "set service sip cli listen-address"') if (!defined($self->{_cli_address}));
+  }
   return ($cmd, undef);
 }
 
@@ -291,6 +311,7 @@ sub confModules {
     push @{ $fs_config->{modules}->{load} }, { 'module' => 'mod_local_stream' };
     push @{ $fs_config->{modules}->{load} }, { 'module' => 'mod_tone_stream' };
     push @{ $fs_config->{modules}->{load} }, { 'module' => 'mod_timerfd' };
+    push @{ $fs_config->{modules}->{load} }, { 'module' => 'mod_event_socket' } if (defined($self->{_cli}));
     my $is_key = 0;
     if (scalar(@{$self->{_codecs}}) > 0) {
         foreach my $key (@{$self->{_codecs}}) {
@@ -323,6 +344,28 @@ sub confModules {
     print "exec confModules\n";
 }
 
+sub confCli {
+    my ($self) = @_;
+    my $fs_config = XMLin($fs_event_socket, KeyAttr=>{});
+    foreach my $fs (@{$fs_config->{settings}->{param}}) {
+        if ($fs->{name} eq 'nat-map' && defined($self->{_cli_nat})) {
+            $fs->{value} = $self->{_cli_nat};
+        }
+        elsif ($fs->{name} eq 'listen-ip' && defined($self->{_cli_address})) {
+            $fs->{value} = $self->{_cli_address};
+        }
+        elsif ($fs->{name} eq 'listen-port' && defined($self->{_cli_port})) {
+            $fs->{value} = $self->{_cli_port};
+        }
+        elsif ($fs->{name} eq 'password' && defined($self->{_cli_password})) {
+            $fs->{value} = $self->{_cli_password};
+        }
+    }
+    my $fs_config_new = XML::Simple->new(rootname=>'configuration');
+    open my $fh, '>:encoding(UTF-8)', $fs_event_socket or die "open($fs_event_socket): $!";
+    $fs_config_new->XMLout($fs_config, OutputFile => $fh);
+    print "exec confCli\n";
+}
 sub confSwitch {
     my ($self) = @_;
     my $fs_config = XMLin($fs_switch, KeyAttr=>{params=>"+names"});

@@ -1,0 +1,4 @@
+help: TCP based interface to control FreeSWITCH
+commit:expression: exec \
+    "sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --conf=cli"
+delete:sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --conf=modules
