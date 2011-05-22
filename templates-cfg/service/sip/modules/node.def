@@ -1,10 +1,6 @@
-priority: 992
+multi:
 type: txt
 help: Modules
-default: "GMT"
-comp_help:Enter the local timezone by specifying "Region/City"
-  Use auto-completion to see available regions and cities.
-  Start with one of these regions:
-    Africa      America   Antarctica   Arctic   Asia     Atlantic
-    Australia   Brazil    Canada       Chile    Europe   Indian
-    Mexico      Mideast   Pacific      US
+allowed: /opt/vyatta/sbin/vyatta-freeswitch.pl --show=modules
+create:sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --conf=modules
+delete:sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --conf=modules

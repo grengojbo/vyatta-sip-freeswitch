@@ -1,0 +1,21 @@
+multi:
+type: txt
+help: Codec Negotiation in FreeSWITCH
+allowed: /opt/vyatta/sbin/vyatta-freeswitch.pl --show=codecs
+create:sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --conf=modules
+update:sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --conf=modules
+comp_help: Possible completions:
+    g723       G.723.1 codec 
+    g729       G.729 codec
+    amr        GSM-AMR (Adaptive Multi-Rate) codec
+    ilbc       iLBC codec
+    speex      Speex codec
+    pcma       PCMA
+    pcmu       PCMU
+    g722       G.722.1 (Siren7) and G.722.1 Annex C (Siren14) Polycom codecs
+    gsm        GSM codec
+    g726       G.726
+    h263       H263 video codec
+    h263-1998  H263-1998 video codec
+    h263       H264 video codec
+    celt       CELT ultra-low delay audio codec

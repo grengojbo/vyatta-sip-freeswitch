@@ -1,9 +1,17 @@
 #!/bin/bash
+
 if [ $# -ne 2 ]; then
     echo "Usage: $0 key value"
     exit 1
 fi
 d=$1
 res="${d}=$2"
-sed -i -e "s/${d}=.*\"/${res}\"/" /opt/freeswitch/conf/vars.xml
-#"sound_prefix=\$\$\{sounds_dir\}/en/us/callie
+if [ $d == 'sound_prefix' ]; then
+    if [ $2 == 'ru' ]; then
+        sed -i -e "s/${d}=.*\"/sound_prefix=\$\$\{sounds_dir\}\/ru\/RU\/elena\"/" /opt/freeswitch/conf/vars.xml
+    else
+        sed -i -e "s/${d}=.*\"/sound_prefix=\$\$\{sounds_dir\}\/en\/us\/callie\"/" /opt/freeswitch/conf/vars.xml
+    fi
+else
+    sed -i -e "s/${d}=.*\"/${res}\"/" /opt/freeswitch/conf/vars.xml
+fi

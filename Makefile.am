@@ -1,6 +1,6 @@
 cfgdir		 = $(datadir)/vyatta-cfg/templates
 opdir		 = $(datadir)/vyatta-op/templates
-share_perl5dir	 = $(datarootdir)/perl5/Vyatta/OpenVPN
+share_perl5dir	 = $(datarootdir)/perl5/Vyatta/FreeSWITCH
 bin_sudo_usersdir = $(bindir)/sudo-users
 
 sbin_SCRIPTS = scripts/vyatta-freeswitch.pl
