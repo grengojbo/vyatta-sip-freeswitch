@@ -44,26 +44,53 @@ use warnings;
 
 my $fs_conf_dir = '/opt/freeswitch/conf';
 
-my ($conf_name, $show_names);
+my ($conf_name, $show_names, $user_names, $reload_names, $profile_names, $action);
 
 sub usage {
     print <<EOF;
 Usage: $0 --conf=<acl|cli|switch|lang|modules>
        $0 --show=<acl|codecs|lang|allowlang|modules>
        $0 --reload=<xml|dialplan>
+       $0 --profile=<name_profile> --action=<create|update|delete>
+       $0 --user=<name_user>
 EOF
     exit 1;
 }
 
 GetOptions("conf=s"  => \$conf_name,
        "show=s"	       => \$show_names,
+       "reload=s"	       => \$reload_names,
+       "profile=s"	       => \$profile_names,
+       "user=s"	       => \$user_names,
+       "action=s"	       => \$action,
 ) or usage();
 
 #show_interfaces($show_names)		if ($show_names);
 fs_conf($conf_name) if ($conf_name);
 fs_show($show_names) if ($show_names);
+fs_profile($profile_names, $action) if ($profile_names);
 exit 0;
 
+sub fs_profile {
+    my ($name, $action) = @_;
+    #my $name = shift;
+    my $config = new Vyatta::FreeSWITCH::Config;
+    $config->setup();
+    my ($cmd, $err) = $config->get_command();
+    #print "fs_profile\n";    
+    if (defined($err)) {
+        print STDERR "FreeSWITCH configuration error: $err.\n";
+        exit 1;
+    }
+    my ($res, $er) = $config->confProfile($name, $action);
+    if (defined($er)) {
+        print STDERR "FreeSWITCH configuration profile error: $er.\n";
+        exit 1;
+    }
+    else {
+        print "$res\n";
+    }
+}
 sub fs_conf {
     my $name = shift;
     

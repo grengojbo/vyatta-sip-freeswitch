@@ -1,2 +1,4 @@
-type: ipv4
-help: Set local IP address of tunnel
+type: ipv4,ipv6
+help: IP address to bind
+val_help: ipv4; IP address to bind
+val_help: ipv6; IPv6 address to bind

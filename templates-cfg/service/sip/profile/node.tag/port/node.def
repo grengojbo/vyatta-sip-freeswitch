@@ -1,4 +1,5 @@
 type: u32
-help: Set local port number to accept connections
-syntax:expression: $VAR(@) > 0 && $VAR(@) < 65536;
-                   "Port must be between 1 and 65535"
+default: 5060
+help: Port to bind to for sip traffic
+syntax:expression: $VAR(@) > 5000 && $VAR(@) < 6000;
+                   "Port must be between 5000 and 6000"

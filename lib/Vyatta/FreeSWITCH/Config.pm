@@ -31,6 +31,8 @@ my $fs_modules = $fs_conf_dir.'/autoload_configs/modules.conf.xml';
 my $fs_switch = $fs_conf_dir.'/autoload_configs/switch.conf.xml';
 my $fs_event_socket = $fs_conf_dir.'/autoload_configs/event_socket.conf.xml';
 my $fs_acl = $fs_conf_dir.'/autoload_configs/acl.conf.xml';
+my $fs_profile_dir = $fs_conf_dir.'/sip_profiles';
+my $fs_example_dir = '/opt/vyatta/etc/freeswitch';
 #my $status_dir = '/opt/vyatta/etc/openvpn/status';
 #my $status_itvl = 30;
 #my $ping_itvl = 10;
@@ -52,8 +54,9 @@ my %fields = (
   _cli_password => undef,
   #_cli_acl      => undef,
   _acl          => undef,
+  _profile_name => undef,
   _acls         => [],
-  _acl_list         => [],
+  _acl_list     => [],
   _codecs       => [],
   _profile      => [],
   _user         => [],
@@ -366,6 +369,70 @@ sub confModules {
     print "exec confModules\n";
 }
 
+sub confProfile {
+    my ($self, $name, $action) = @_;
+    print "exec confProfile\n";
+    my $address = undef;
+    my $cmd = undef;
+    my $fs_profile = undef;
+
+    my $config = new Vyatta::Config;
+    $config->setLevel("$fsLevel");
+    $self->{_profile_name} = $name;
+    my $fs_profile_file = $fs_profile_dir."/$name.xml";
+    if ($action eq 'delete') {
+        $cmd = "Delete profile: $name\n";
+        return ($cmd, undef);
+    }
+    else {
+        my $mode = $config->returnValue("profile $name mode");
+        $address = $config->returnValue("profile $name address");
+        return (undef, "Must specify \"profile $name address\"") if (!defined($address));
+        my $rtp_ip = $address;
+        my $ext_sip_ip = $address;
+        my $ext_rtp_ip = $address;
+        #my $rtp_ip = $config->returnValue("profile $name rtp-ip");
+        #my $auth_calls = $config->returnValue("profile $name auth-calls");
+        #my $auth_all_packets = $config->returnValue("profile $name auth-all-packets");
+        #my $ext_rtp_ip = $config->returnValue("profile $name ext-rtp-ip");
+        #my $ext_sip_ip = $config->returnValue("profile $name ext-sip-ip");
+        #my $ = $config->returnValue("profile $name ");
+        #my $ = $config->returnValue("profile $name ");
+        #my $ = $config->returnValue("profile $name ");
+        #my $ = $config->returnValue("profile $name ");
+ 
+        my $fs_profile_example = $fs_example_dir."/$mode.xml";
+
+        if (-e $fs_profile_file) {
+            #print "Exists profile: $fs_profile_file\n";
+            $fs_profile = $fs_profile_file;
+            if (-e "$fs_profile_dir/$name/") {
+                print "Exists profile dir: $fs_profile_dir/$name/\n";
+            }
+        }
+        elsif (-e $fs_profile_example) {
+            #print "Exists example profile: $fs_profile_example\n";
+            $fs_profile = $fs_profile_example;
+        }
+        else {
+            return (undef, "Not exists example profile: $fs_profile_example and profile $fs_profile\n");
+        }
+        my $fs_config = XMLin($fs_profile, KeyAttr=>{});
+        foreach my $fs (@{$fs_config->{settings}->{param}}) {
+            if ($fs->{name} eq 'sip-ip') { $fs->{value} = $address; }
+            elsif ($fs->{name} eq 'rtp-ip') { $fs->{value} = $rtp_ip; }
+            elsif ($fs->{name} eq 'ext-rtp-ip') { $fs->{value} = $ext_rtp_ip; }
+            elsif ($fs->{name} eq 'ext-sip-ip') { $fs->{value} = $ext_sip_ip; }
+            elsif ($fs->{name} eq 'sip-port') { $fs->{value} = $config->returnValue("profile $name port"); }
+        }
+        my $fs_config_new = XML::Simple->new(rootname=>'profile');
+        #open my $fh, '>:encoding(UTF-8)', $fs_profile or die "open($fs_profile): $!";
+        #$fs_config_new->XMLout($fs_config, OutputFile => $fh);
+        $cmd = $fs_config_new->XMLout($fs_config);
+        return ($cmd, undef);
+    }
+    
+}
 sub confCli {
     my ($self) = @_;
     my $fs_config = XMLin($fs_event_socket, KeyAttr=>{});

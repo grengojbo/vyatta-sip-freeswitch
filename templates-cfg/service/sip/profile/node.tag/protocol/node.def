@@ -1,7 +1,10 @@
 type: txt
+default: "udp"
 help: Set SIP communication protocol
 syntax:expression: $VAR(@) in "udp", "tcp", "udp-tcp";
                    "Must be \"udp\", \"tcp\", or \"udp-tcp\""
+commit:expression: exec \
+    "sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --profile=$VAR(../@) --action=update"
 comp_help: Possible completions:
   udp          Use UDP
   tcp          Use TCP 
