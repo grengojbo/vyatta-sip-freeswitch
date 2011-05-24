@@ -1,0 +1,5 @@
+multi:
+type: txt
+default: "default"
+help: Contexts are a logical grouping of extensions. You may have multiple extensions contained within a single context
+syntax:expression: pattern $VAR(@) "^[-_a-zA-Z0-9.]+$" ; "invalid context name \"$VAR(@)\""

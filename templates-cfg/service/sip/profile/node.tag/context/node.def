@@ -1,0 +1,5 @@
+type: txt
+help: Contexts are a logical grouping of extensions
+allowed: /opt/vyatta/sbin/vyatta-freeswitch.pl --show=context
+update:expression: exec \
+    "sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --profile=$VAR(../@) --action=update"

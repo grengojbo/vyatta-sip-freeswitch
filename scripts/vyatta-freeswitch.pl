@@ -141,6 +141,18 @@ sub fs_show {
     elsif ($name eq 'codecs') {
         Vyatta::FreeSWITCH::Config::show_codecs();
     }
+    elsif ($name eq 'context') {
+        my $config = new Vyatta::FreeSWITCH::Config;
+        $config->setup();
+        my ($cmd, $err) = $config->showContext();
+        if (defined($err)) {
+            print STDERR "\nFreeSWITCH configuration error: $err.\n";
+            exit 1;
+        }
+        else {
+            print "$cmd\n";
+        }
+    }
     elsif ($name eq 'allowlang') {
         my $config = new Vyatta::FreeSWITCH::Config;
         $config->setup();

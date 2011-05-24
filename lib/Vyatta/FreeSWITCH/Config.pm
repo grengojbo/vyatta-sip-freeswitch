@@ -62,6 +62,7 @@ my %fields = (
   _user         => [],
   _language     => [],
   _modules      => [],
+  _context      => [],
   _zrtp_secure_media      => undef,
   _default_language       => undef,
   _multiple_registrations => undef,
@@ -224,6 +225,8 @@ sub setup {
   $self->{_mode} = $config->returnValue('mode');
   my @tmp_modules = $config->returnValues('modules');
   $self->{_modules} = \@tmp_modules;
+  my @tmp_context = $config->returnValues('dialplan context');
+  $self->{_context} = \@tmp_context;
   $self->{_multiple_registrations} = $config->returnValue('multiple-registrations');
   my @tmp_profile = $config->returnValues('profile');
   $self->{_profile} = \@tmp_profile;
@@ -396,7 +399,10 @@ sub confProfile {
         #my $auth_all_packets = $config->returnValue("profile $name auth-all-packets");
         #my $ext_rtp_ip = $config->returnValue("profile $name ext-rtp-ip");
         #my $ext_sip_ip = $config->returnValue("profile $name ext-sip-ip");
-        #my $ = $config->returnValue("profile $name ");
+        my $context = 'default';
+        if (defined($config->returnValue("profile $name context"))) {
+            $context = $config->returnValue("profile $name context");
+        }
         #my $ = $config->returnValue("profile $name ");
         #my $ = $config->returnValue("profile $name ");
         #my $ = $config->returnValue("profile $name ");
@@ -424,6 +430,7 @@ sub confProfile {
             elsif ($fs->{name} eq 'ext-rtp-ip') { $fs->{value} = $ext_rtp_ip; }
             elsif ($fs->{name} eq 'ext-sip-ip') { $fs->{value} = $ext_sip_ip; }
             elsif ($fs->{name} eq 'sip-port') { $fs->{value} = $config->returnValue("profile $name port"); }
+            elsif ($fs->{name} eq 'context') { $fs->{value} = $context; }
         }
         my $fs_config_new = XML::Simple->new(rootname=>'profile');
         #open my $fh, '>:encoding(UTF-8)', $fs_profile or die "open($fs_profile): $!";
@@ -513,6 +520,15 @@ sub showLanguage {
     }
     else {
         return (undef, 'Must specify "language"')
+    }
+}
+sub showContext {
+    my ($self) = @_;
+    if (scalar(@{$self->{_context}}) > 0) {
+        return (join(' ', @{$self->{_context}}), undef);
+    }
+    else {
+        return ('default', undef)
     }
 }
 
