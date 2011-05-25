@@ -1,0 +1,4 @@
+type: txt
+help: Accept any authentication without actually checking (ot a good feature for most people)
+syntax:expression: $VAR(@) in "true", "false"
+update:sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --profile=$VAR(../../@) --action=update

@@ -1,0 +1,4 @@
+type: txt
+help: Authentication on this profile
+syntax:expression: $VAR(@) in "true", "false"
+update:sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --profile=$VAR(../../@) --action=update

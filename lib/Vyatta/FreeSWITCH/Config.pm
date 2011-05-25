@@ -394,6 +394,11 @@ sub confProfile {
         my $rtp_ip = $address;
         my $ext_sip_ip = $address;
         my $ext_rtp_ip = $address;
+
+        my $log_auth_failures_def = undef;
+        my $challenge_realm_def = undef;
+        my $accept_blind_auth_def = undef;
+
         #my $rtp_ip = $config->returnValue("profile $name rtp-ip");
         #my $auth_calls = $config->returnValue("profile $name auth-calls");
         #my $auth_all_packets = $config->returnValue("profile $name auth-all-packets");
@@ -403,9 +408,21 @@ sub confProfile {
         if (defined($config->returnValue("profile $name context"))) {
             $context = $config->returnValue("profile $name context");
         }
+        my $challenge_realm = (defined($config->returnValue("profile $name auth challenge-realm"))) ? $config->returnValue("profile $name auth challenge-realm") : 'auto_from';
+        my $log_auth_failures = (defined($config->returnValue("profile $name auth log-auth-failures"))) ? $config->returnValue("profile $name auth log-auth-failures") : 'true';
+        my $accept_blind_auth = (defined($config->returnValue("profile $name auth accept-blind-auth"))) ? $config->returnValue("profile $name auth accept-blind-auth") : 'true';
+        my $auth_all_packets = (defined($config->returnValue("profile $name auth all-packets"))) ? $config->returnValue("profile $name auth all-packets") : 'false';
+        my $auth_calls = (defined($config->returnValue("profile $name auth calls"))) ? $config->returnValue("profile $name auth calls") : 'true';
+        #my $ = (defined($config->returnValue("profile $name auth "))) ? $config->returnValue("profile $name auth ") : '';
         #my $ = $config->returnValue("profile $name ");
-        #my $ = $config->returnValue("profile $name ");
-        #my $ = $config->returnValue("profile $name ");
+        if ($action eq 'create' && $mode eq 'internal') {
+            $auth_all_packets = 'false';
+            $auth_calls = 'true';
+        }
+        elsif ($action eq 'create' && $mode eq 'external') {
+            $auth_all_packets = 'false';
+            $auth_calls = 'false';
+        }
  
         my $fs_profile_example = $fs_example_dir."/$mode.xml";
 
@@ -431,6 +448,12 @@ sub confProfile {
             elsif ($fs->{name} eq 'ext-sip-ip') { $fs->{value} = $ext_sip_ip; }
             elsif ($fs->{name} eq 'sip-port') { $fs->{value} = $config->returnValue("profile $name port"); }
             elsif ($fs->{name} eq 'context') { $fs->{value} = $context; }
+            elsif ($fs->{name} eq 'log-auth-failures') { $fs->{value} = $log_auth_failures; }
+            elsif ($fs->{name} eq 'challenge-realm') { $fs->{value} = $challenge_realm; }
+            elsif ($fs->{name} eq 'accept-blind-auth') { $fs->{value} = $accept_blind_auth; }
+            elsif ($fs->{name} eq 'auth-all-packets') { $fs->{value} = $auth_all_packets; }
+            elsif ($fs->{name} eq 'auth-calls') { $fs->{value} = $auth_calls; }
+            #elsif ($fs->{name} eq '') { $fs->{value} = $; }
         }
         my $fs_config_new = XML::Simple->new(rootname=>'profile');
         #open my $fh, '>:encoding(UTF-8)', $fs_profile or die "open($fs_profile): $!";
