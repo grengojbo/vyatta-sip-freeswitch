@@ -1,0 +1,4 @@
+type: txt
+help: To let calls hit the dialplan before you decide if the codec is OK
+syntax:expression: $VAR(@) in "true", "false"
+update:sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --profile=$VAR(../../@) --action=update

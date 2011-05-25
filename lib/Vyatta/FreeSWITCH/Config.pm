@@ -371,7 +371,19 @@ sub confModules {
     $fs_config_new->XMLout($fs_config, OutputFile => $fh);
     print "exec confModules\n";
 }
-
+sub ListsCodecs {
+    my ($codec_list) = @_;
+    my $is_start = undef;
+    foreach my $key (@{$codec_list}) {
+        if (defined($is_start)) {
+            $is_start .= ','.$global_codecs_hash{$key};
+        }
+        else {
+            $is_start = $global_codecs_hash{$key};
+        }
+    }
+    return $is_start;
+}
 sub confProfile {
     my ($self, $name, $action) = @_;
     print "exec confProfile\n";
@@ -390,30 +402,55 @@ sub confProfile {
     else {
         my $mode = $config->returnValue("profile $name mode");
         $address = $config->returnValue("profile $name address");
+        my $inbound_codec_prefs = undef;
+        my $outbound_codec_prefs = undef;
         return (undef, "Must specify \"profile $name address\"") if (!defined($address));
+        my @tmp_codec_inbound = $config->returnValues("profile $name codec inbound");
+        if (scalar(@tmp_codec_inbound) > 0) {
+            $inbound_codec_prefs = ListsCodecs(\@tmp_codec_inbound);
+            my @tmp_codec_outbound = $config->returnValues("profile $name codec outbound");
+            if (scalar(@tmp_codec_outbound) > 0) {
+                $outbound_codec_prefs = ListsCodecs(\@tmp_codec_outbound);
+            }
+            else {
+                $outbound_codec_prefs = $inbound_codec_prefs;
+            }
+        }
+        else {
+            return (undef, "Must specify \"profile $name codec inbound\"");
+                        
+        }
         my $rtp_ip = $address;
         my $ext_sip_ip = $address;
         my $ext_rtp_ip = $address;
 
-        my $log_auth_failures_def = undef;
-        my $challenge_realm_def = undef;
+        #my $log_auth_failures_def = undef;
+        #my $challenge_realm_def = undef;
         my $accept_blind_auth_def = undef;
+        my $disable_transcoding_def = undef;
+        my $bitpacking_def = undef;
+        my $inbound_late_negotiation_def = undef; 
 
         #my $rtp_ip = $config->returnValue("profile $name rtp-ip");
-        #my $auth_calls = $config->returnValue("profile $name auth-calls");
-        #my $auth_all_packets = $config->returnValue("profile $name auth-all-packets");
         #my $ext_rtp_ip = $config->returnValue("profile $name ext-rtp-ip");
         #my $ext_sip_ip = $config->returnValue("profile $name ext-sip-ip");
         my $context = 'default';
+        my $disable_transcoding = 'false';
         if (defined($config->returnValue("profile $name context"))) {
             $context = $config->returnValue("profile $name context");
         }
+        if (defined($config->returnValue("profile $name codec transcoding")) && $config->returnValue("profile $name codec transcoding") eq 'diable') {
+            $disable_transcoding = 'true';
+        }
         my $challenge_realm = (defined($config->returnValue("profile $name auth challenge-realm"))) ? $config->returnValue("profile $name auth challenge-realm") : 'auto_from';
         my $log_auth_failures = (defined($config->returnValue("profile $name auth log-auth-failures"))) ? $config->returnValue("profile $name auth log-auth-failures") : 'true';
-        my $accept_blind_auth = (defined($config->returnValue("profile $name auth accept-blind-auth"))) ? $config->returnValue("profile $name auth accept-blind-auth") : 'true';
+        my $accept_blind_auth = (defined($config->returnValue("profile $name auth accept-blind-auth"))) ? $config->returnValue("profile $name auth accept-blind-auth") : undef;
         my $auth_all_packets = (defined($config->returnValue("profile $name auth all-packets"))) ? $config->returnValue("profile $name auth all-packets") : 'false';
         my $auth_calls = (defined($config->returnValue("profile $name auth calls"))) ? $config->returnValue("profile $name auth calls") : 'true';
-        #my $ = (defined($config->returnValue("profile $name auth "))) ? $config->returnValue("profile $name auth ") : '';
+        my $bitpacking = (defined($config->returnValue("profile $name codec bitpacking")) && $config->returnValue("profile $name codec bitpacking") eq 'enable') ? 'aal2' : undef;
+        my $inbound_codec_negotiation = (defined($config->returnValue("profile $name codec negotiation"))) ? $config->returnValue("profile $name codec negotiation") : 'generous';
+        my $inbound_late_negotiation = (defined($config->returnValue("profile $name codec late-negotiation"))) ? $config->returnValue("profile $name codec late-negotiation") : undef;
+        #my $ = (defined($config->returnValue("profile $name codec "))) ? $config->returnValue("profile $name codec ") : '';
         #my $ = $config->returnValue("profile $name ");
         if ($action eq 'create' && $mode eq 'internal') {
             $auth_all_packets = 'false';
@@ -450,11 +487,35 @@ sub confProfile {
             elsif ($fs->{name} eq 'context') { $fs->{value} = $context; }
             elsif ($fs->{name} eq 'log-auth-failures') { $fs->{value} = $log_auth_failures; }
             elsif ($fs->{name} eq 'challenge-realm') { $fs->{value} = $challenge_realm; }
-            elsif ($fs->{name} eq 'accept-blind-auth') { $fs->{value} = $accept_blind_auth; }
+            elsif ($fs->{name} eq 'accept-blind-auth') {
+                $fs->{value} = $accept_blind_auth; 
+                $accept_blind_auth_def = 1;
+            }
             elsif ($fs->{name} eq 'auth-all-packets') { $fs->{value} = $auth_all_packets; }
             elsif ($fs->{name} eq 'auth-calls') { $fs->{value} = $auth_calls; }
+            elsif ($fs->{name} eq 'disable-transcoding') { 
+                $fs->{value} = $disable_transcoding; 
+                $disable_transcoding_def = 1;
+            }
+            elsif ($fs->{name} eq 'bitpacking' && defined($bitpacking)) { 
+                $fs->{value} = $bitpacking;
+                $bitpacking_def = 1;
+            }
+            elsif ($fs->{name} eq 'inbound-codec-prefs') { $fs->{value} = $inbound_codec_prefs; }
+            elsif ($fs->{name} eq 'outbound-codec-prefs') { $fs->{value} = $outbound_codec_prefs; }
+            elsif ($fs->{name} eq 'inbound-codec-negotiation') { $fs->{value} = $inbound_codec_negotiation; }
+            elsif ($fs->{name} eq 'inbound-late-negotiation') {
+                $fs->{value} = $inbound_late_negotiation;
+                $inbound_late_negotiation_def = 1;
+            }
             #elsif ($fs->{name} eq '') { $fs->{value} = $; }
         }
+        push @{ $fs_config->{settings}->{param} }, { name => 'accept-blind-auth', value => $accept_blind_auth } if (defined($accept_blind_auth) && !defined($accept_blind_auth_def));
+        push @{ $fs_config->{settings}->{param} }, { name => 'disable-transcoding', value => $disable_transcoding } if (!defined($disable_transcoding_def));
+        push @{ $fs_config->{settings}->{param} }, { name => 'bitpacking', value => $bitpacking } if (defined($bitpacking) && !defined($bitpacking_def));
+        push @{ $fs_config->{settings}->{param} }, { name => 'inbound-late-negotiation', value => $inbound_late_negotiation } if (defined($inbound_late_negotiation) && !defined($inbound_late_negotiation_def));
+        #push @{ $fs_config->{settings}->{param} }, { name => '', value => $ } if (defined($) && !defined($));
+        # $inbound_late_negotiation
         my $fs_config_new = XML::Simple->new(rootname=>'profile');
         #open my $fh, '>:encoding(UTF-8)', $fs_profile or die "open($fs_profile): $!";
         #$fs_config_new->XMLout($fs_config, OutputFile => $fh);
@@ -536,6 +597,15 @@ sub show_codecs {
     print join(' ', @codecs_all), "\n";
 }
 
+sub showCodec {
+    my ($self) = @_;
+    if (scalar(@{$self->{_codecs}}) > 0) {
+        return (join(' ', @{$self->{_codecs}}), undef);
+    }
+    else {
+        return (undef, 'Must specify "codecs"')
+    }
+}
 sub showLanguage {
     my ($self) = @_;
     if (scalar(@{$self->{_language}}) > 0) {
