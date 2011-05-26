@@ -1,0 +1,5 @@
+type: txt
+help: Use the callerid of an inbound call in the from field on outbound calls via this gateway
+syntax:expression: $VAR(@) in "true", "false"
+commit:expression: exec "sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --profile=$VAR(../../@) --gateway=$VAR(../@) --action=update"
+delete:expression: exec "sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --profile=$VAR(../../@) --gateway=$VAR(../@) --action=delete --delete=n"

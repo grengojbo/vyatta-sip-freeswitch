@@ -1,0 +1,5 @@
+type: txt
+help: Username to use in from
+syntax:expression: pattern $VAR(@) "^[-_a-zA-Z0-9.]+$" ; "invalid User name \"$VAR(@)\""
+commit:expression: exec "sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --profile=$VAR(../../@) --gateway=$VAR(../@) --action=update"
+delete:expression: exec "sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --profile=$VAR(../../@) --gateway=$VAR(../@) --action=delete --delete=n"

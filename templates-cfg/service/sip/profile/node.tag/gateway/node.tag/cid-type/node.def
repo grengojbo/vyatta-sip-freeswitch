@@ -1,0 +1,4 @@
+type: txt
+syntax:expression: $VAR(@) in "rpid"
+commit:expression: exec "sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --profile=$VAR(../../@) --gateway=$VAR(../@) --action=update"
+delete:expression: exec "sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --profile=$VAR(../../@) --gateway=$VAR(../@) --action=delete --delete=n"

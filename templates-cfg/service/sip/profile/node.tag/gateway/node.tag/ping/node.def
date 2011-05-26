@@ -1,0 +1,8 @@
+type: u32
+help: send an options ping every x seconds (recomendent 50), failure will unregister and/or mark it down
+syntax:expression: $VAR(@) > 24 && $VAR(@) < 601;
+                   "Port must be between 25 and 600"
+commit:expression: exec "sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --profile=$VAR(../../@) --gateway=$VAR(../@) --action=update"
+delete:expression: exec "sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --profile=$VAR(../../@) --gateway=$VAR(../@) --action=delete --delete=n"
+#update:sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --profile=$VAR(../../@) --gateway=$VAR(../@) --update=ping
+#delete:sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --profile=$VAR(../../@) --gateway=$VAR(../@) --delete=ping

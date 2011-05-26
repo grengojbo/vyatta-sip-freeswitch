@@ -1,0 +1,5 @@
+type: txt
+help: You set a direction, which sets it on both incoming and outgoing calls if omitted
+syntax:expression: $VAR(@) in "inbound", "outbound"
+commit:expression: exec "sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --profile=$VAR(../../../@) --gateway=$VAR(../../@) --action=update"
+delete:expression: exec "sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --profile=$VAR(../../../@) --gateway=$VAR(../../@) --action=delete --delete=n"

@@ -1,3 +1,7 @@
 tag:
+priority: 900
 type: txt
-help: Name SIP profile
+help: A gateway has an attribute name by which it can be referred. A gateway describes how to use a different UA to reach destinations
+syntax:expression: pattern $VAR(@) "^[-_a-zA-Z0-9.]+$" ; "invalid Gateway name \"$VAR(@)\""
+create:expression: exec "sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --profile=$VAR(../@) --gateway=$VAR(@) --action=create"
+delete:sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --profile=$VAR(../@) --gateway=$VAR(@) --action=delete --delete=gateway

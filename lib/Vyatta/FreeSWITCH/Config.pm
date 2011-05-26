@@ -24,6 +24,8 @@ use NetAddr::IP;
 use XML::Simple;
 use Data::Dumper;
 
+my $uid = 'freeswitch';
+my $gid = 'daemon';
 my $fs_dir = '/opt/freeswitch';
 my $fs_conf_dir = '/opt/freeswitch/conf';
 my $fs_fs = $fs_conf_dir.'/freeswitch.xml';
@@ -59,6 +61,7 @@ my %fields = (
   _acl_list     => [],
   _codecs       => [],
   _profile      => [],
+  _gateway      => [],
   _user         => [],
   _language     => [],
   _modules      => [],
@@ -384,6 +387,137 @@ sub ListsCodecs {
     }
     return $is_start;
 }
+sub confGateway {
+    my ($self, $name, $profile, $action, $action_name, $action_val) = @_;
+    my $cmd = undef;
+    my $fs_gateway_dir = "$fs_profile_dir/$profile";
+    my $fs_gateway = "$fs_profile_dir/$profile/$name.xml";
+    #print "exec confGateway\n";
+
+    my $config = new Vyatta::Config;
+    $config->setLevel("$fsLevel");
+    #print "Action: $action - $action_val\n";
+    if ($action eq 'delete' && $action_val eq 'gateway') {
+        if (-e $fs_gateway) {
+            unlink($fs_gateway);
+            $cmd = "Delete Gateway: $name (successfully).\n";
+        }
+        else {
+            $cmd = "File was not deleted.\n"
+        }
+        return ($cmd, undef);
+    }
+    else {
+        if (!-e "$fs_gateway_dir/") {
+            mkdir($fs_gateway_dir, 0750);
+            chown $uid, $gid, $fs_gateway_dir;
+            #print "Not exists profile dir: $fs_gateway_dir/\n";
+        }
+        my $user = undef;
+        my $register = undef;
+        my $password = undef;
+        my $mode = (defined($config->returnValue("profile $profile gateway $name mode"))) ? $config->returnValue("profile $profile gateway $name mode") : undef;
+        return (undef, "Must specify \"profile $profile gateway $name mode\"") if (!defined($mode) && ($action_name eq 'update' || $action_name eq 'create'));
+        my $from_domain = (defined($config->returnValue("profile $profile gateway $name from-domain"))) ? $config->returnValue("profile $profile gateway $name from-domain") : undef;
+        if ($mode eq 'trunk') {
+            $user = 'pass';
+            $register = 'false';
+            $password = 'pass';
+        }
+        else {
+            $user = (defined($config->returnValue("profile $profile gateway $name user"))) ? $config->returnValue("profile $profile gateway $name user") : undef;
+            $register = (defined($config->returnValue("profile $profile gateway $name register"))) ? $config->returnValue("profile $profile gateway $name register") : 'true';
+            $password = (defined($config->returnValue("profile $profile gateway $name password"))) ? $config->returnValue("profile $profile gateway $name password") : undef;
+        }
+
+        my $retry = (defined($config->returnValue("profile $profile gateway $name retry-seconds"))) ? $config->returnValue("profile $profile gateway $name retry-seconds") : 30;
+        my $register_transport = (defined($config->returnValue("profile $profile gateway $name register-transport"))) ? $config->returnValue("profile $profile gateway $name register-transport") : 'udp';
+        my $register_proxy = (defined($config->returnValue("profile $profile gateway $name register-proxy"))) ? $config->returnValue("profile $profile gateway $name register-proxy") : undef;
+        my $realm = (defined($config->returnValue("profile $profile gateway $name realm"))) ? $config->returnValue("profile $profile gateway $name realm") : undef;
+        my $proxy = (defined($config->returnValue("profile $profile gateway $name proxy"))) ? $config->returnValue("profile $profile gateway $name proxy") : undef;
+        my $ping = (defined($config->returnValue("profile $profile gateway $name ping"))) ? $config->returnValue("profile $profile gateway $name ping") : undef;
+        my $from_user = (defined($config->returnValue("profile $profile gateway $name from-user"))) ? $config->returnValue("profile $profile gateway $name from-user") : undef;
+        my $extension = (defined($config->returnValue("profile $profile gateway $name extension"))) ? $config->returnValue("profile $profile gateway $name extension") : undef;
+        my $expire = (defined($config->returnValue("profile $profile gateway $name expire-seconds"))) ? $config->returnValue("profile $profile gateway $name expire-seconds") : undef;
+        my $contact_params = (defined($config->returnValue("profile $profile gateway $name contact-params"))) ? $config->returnValue("profile $profile gateway $name contact-params") : undef;
+        my $callerid = (defined($config->returnValue("profile $profile gateway $name caller-id-in-from"))) ? $config->returnValue("profile $profile gateway $name caller-id-in-from") : 'true';
+        my $cid = (defined($config->returnValue("profile $profile gateway $name cid-type"))) ? 'rpid' : undef;
+        my $extension_in_contact = (defined($config->returnValue("profile $profile gateway $name extension-in-contact"))) ? $config->returnValue("profile $profile gateway $name extension-in-contact") : undef;
+        
+        if (!defined($user) && $action eq 'delete') {
+            return (undef, undef); 
+        }
+        elsif (!defined($user)) {
+            return (undef, "Must specify \"profile $name gateway $name user\""); 
+        }
+        if (!defined($realm) && $action eq 'delete') {
+            return (undef, undef); 
+        }
+        elsif (!defined($realm)) {
+            return (undef, "Must specify \"profile $name gateway $name realm\"");
+        }
+        if (!defined($password) && $action eq 'delete') {
+            return (undef, undef); 
+        }
+        elsif (!defined($password)) {
+            return (undef, "Must specify \"profile $name gateway $name password\"");
+        }
+        if (!defined($from_domain) && $action eq 'delete') {
+            return (undef, undef); 
+        }
+        elsif (!defined($from_domain)) {
+            return (undef, "Must specify \"profile $name gateway $name from-domain\""); 
+        }
+
+        my $fs_config_new = XML::Simple->new(rootname=>'include');
+        my @a = ();
+        my $fs_config = XMLin("<include><gateway name=\"$name\"/></include>", KeyAttr => {});
+        push @a, {name => 'username', value => $user };
+        push @a, {name => 'password', value => $password };
+        push @a, {name => 'realm', value => $realm };
+        push @a, {name => 'from-domain', value => $from_domain };
+        push @a, {name => 'from-user', value => $from_user } if (defined($from_user));
+        push @a, {name => 'register', value => $register };
+        push @a, {name => 'register-transport', value => $register_transport };
+        push @a, {name => 'register-proxy', value => $register_proxy } if (defined($register_proxy));
+        push @a, {name => 'proxy', value => $proxy } if (defined($proxy));
+        push @a, {name => 'retry-seconds', value => $retry };
+        push @a, {name => 'ping', value => $ping } if (defined($ping));
+        push @a, {name => 'expire-seconds', value => $expire } if (defined($expire));
+        push @a, {name => 'caller-id-in-from', value => $callerid };
+        push @a, {name => 'extension', value => $extension } if (defined($extension));
+        push @a, {name => 'contact-params', value => $contact_params } if (defined($contact_params));
+        push @a, {name => 'cid-type', value => $cid } if (defined($cid));
+        push @a, {name => 'extension-in-contact', value => $extension_in_contact } if (defined($extension_in_contact));
+        
+        #my $ = (defined($config->returnValue("profile $profile gateway $name "))) ? $config->returnValue("profile $profile gateway $name ") : '';
+        #return (undef, "Must specify \"profile $name gateway $name \"") if (!defined($));
+        #push @a, {name => '', value => $ } if (defined($));
+        $fs_config->{gateway}->{param} = \@a;
+        my @tmp_variables = $config->listNodes("profile $profile gateway $name variables");
+        if (scalar(@tmp_variables) > 0) {
+            my @tmp_variables_node = ();
+            for my $c (@tmp_variables) {
+                my $d =(defined($config->returnValue("profile $profile gateway $name variables $c data"))) ? $config->returnValue("profile $profile gateway $name variables $c data") : undef;
+                my $ad =(defined($config->returnValue("profile $profile gateway $name variables $c direction"))) ? $config->returnValue("profile $profile gateway $name variables $c direction") : undef;
+                return (undef, "Must specify \"profile $profile gateway $name variables $c data\"") if (!defined($d));
+                if (defined($ad)) {
+                    push @tmp_variables_node, { name => $c, data => $d, direction => $ad };
+                }
+                else {
+                    push @tmp_variables_node, { name => $c, data => $d };
+                }
+            }
+            $fs_config->{gateway}->{variables}->{variable} = \@tmp_variables_node;
+        }
+        open my $fh, '>:encoding(UTF-8)', $fs_gateway or die "open($fs_gateway): $!";
+        $fs_config_new->XMLout($fs_config, OutputFile => $fh);
+        #$cmd = $fs_config_new->XMLout($fs_config);
+        #$cmd = "Create Gateway: $fs_gateway\n";
+        $cmd = undef;
+        return ($cmd, undef);
+    }
+}
 sub confProfile {
     my ($self, $name, $action) = @_;
     print "exec confProfile\n";
@@ -394,6 +528,10 @@ sub confProfile {
     my $config = new Vyatta::Config;
     $config->setLevel("$fsLevel");
     $self->{_profile_name} = $name;
+    
+    my @tmp_gateways = $config->listNodes("profile $name gateway");
+    $self->{_gateway} = \@tmp_gateways;
+
     my $fs_profile_file = $fs_profile_dir."/$name.xml";
     if ($action eq 'delete') {
         $cmd = "Delete profile: $name\n";
@@ -418,8 +556,8 @@ sub confProfile {
         }
         else {
             return (undef, "Must specify \"profile $name codec inbound\"");
-                        
         }
+
         my $rtp_ip = $address;
         my $ext_sip_ip = $address;
         my $ext_rtp_ip = $address;
@@ -450,8 +588,6 @@ sub confProfile {
         my $bitpacking = (defined($config->returnValue("profile $name codec bitpacking")) && $config->returnValue("profile $name codec bitpacking") eq 'enable') ? 'aal2' : undef;
         my $inbound_codec_negotiation = (defined($config->returnValue("profile $name codec negotiation"))) ? $config->returnValue("profile $name codec negotiation") : 'generous';
         my $inbound_late_negotiation = (defined($config->returnValue("profile $name codec late-negotiation"))) ? $config->returnValue("profile $name codec late-negotiation") : undef;
-        #my $ = (defined($config->returnValue("profile $name codec "))) ? $config->returnValue("profile $name codec ") : '';
-        #my $ = $config->returnValue("profile $name ");
         if ($action eq 'create' && $mode eq 'internal') {
             $auth_all_packets = 'false';
             $auth_calls = 'true';
@@ -466,9 +602,6 @@ sub confProfile {
         if (-e $fs_profile_file) {
             #print "Exists profile: $fs_profile_file\n";
             $fs_profile = $fs_profile_file;
-            if (-e "$fs_profile_dir/$name/") {
-                print "Exists profile dir: $fs_profile_dir/$name/\n";
-            }
         }
         elsif (-e $fs_profile_example) {
             #print "Exists example profile: $fs_profile_example\n";
@@ -478,6 +611,13 @@ sub confProfile {
             return (undef, "Not exists example profile: $fs_profile_example and profile $fs_profile\n");
         }
         my $fs_config = XMLin($fs_profile, KeyAttr=>{});
+        delete $fs_config->{aliases};
+        delete $fs_config->{gateways};
+        if (scalar(@{$self->{_gateway}}) > 0) {
+            $fs_config->{gateways}->{name} = "X-PRE-PROCESS";
+            $fs_config->{gateways}->{cmd} = "include";
+            $fs_config->{gateways}->{data} = "$name/*.xml";
+        }
         foreach my $fs (@{$fs_config->{settings}->{param}}) {
             if ($fs->{name} eq 'sip-ip') { $fs->{value} = $address; }
             elsif ($fs->{name} eq 'rtp-ip') { $fs->{value} = $rtp_ip; }

@@ -1,0 +1,8 @@
+tag:
+type: txt
+help: In addition to the parameters you can optionally set variables to set on either incoming or outgoing calls through this gateway
+syntax:expression: pattern $VAR(@) "^[-_a-zA-Z0-9.]+$" ; "invalid variables name \"$VAR(@)\""
+commit:expression: exec "sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --profile=$VAR(../../@) --gateway=$VAR(../@) --action=update"
+delete:expression: exec "sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --profile=$VAR(../../@) --gateway=$VAR(../@) --action=delete --delete=n"
+#update:sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --profile=$VAR(../../@) --gateway=$VAR(../@) --update=variables
+#delete:sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --profile=$VAR(../../@) --gateway=$VAR(../@) --delete=variables

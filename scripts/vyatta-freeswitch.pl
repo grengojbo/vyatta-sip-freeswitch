@@ -44,14 +44,14 @@ use warnings;
 
 my $fs_conf_dir = '/opt/freeswitch/conf';
 
-my ($conf_name, $show_names, $user_names, $reload_names, $profile_names, $action);
+my ($conf_name, $show_names, $user_names, $reload_names, $profile_names, $gateway_names, $action, $action_update, $action_delete, $action_create, $action_name, $action_val);
 
 sub usage {
     print <<EOF;
 Usage: $0 --conf=<acl|cli|switch|lang|modules>
        $0 --show=<acl|codecs|lang|allowlang|modules>
        $0 --reload=<xml|dialplan>
-       $0 --profile=<name_profile> --action=<create|update|delete>
+       $0 --profile=<name_profile> [--gateway=<name_gateway>] [--action=<create|update|delete>] [--update|--delete|-create=<var_name>]
        $0 --user=<name_user>
 EOF
     exit 1;
@@ -61,14 +61,34 @@ GetOptions("conf=s"  => \$conf_name,
        "show=s"	       => \$show_names,
        "reload=s"	       => \$reload_names,
        "profile=s"	       => \$profile_names,
+       "gateway=s"	       => \$gateway_names,
        "user=s"	       => \$user_names,
        "action=s"	       => \$action,
+       "update=s"	       => \$action_update,
+       "create=s"	       => \$action_create,
+       "delete=s"	       => \$action_delete,
 ) or usage();
-
+if (!defined($action)) { $action = 'update'; }
+if (defined($action_delete)) {
+    $action_name = 'delete';
+    $action_val = $action_delete;
+}
+elsif (defined($action_update)) {
+    $action_name = 'update';
+    $action_val = $action_update;
+}
+elsif (defined($action_create)) {
+    $action_name = 'create';
+    $action_val = $action_create;
+}
+else {
+    $action_name = 'update';
+}
 #show_interfaces($show_names)		if ($show_names);
 fs_conf($conf_name) if ($conf_name);
 fs_show($show_names) if ($show_names);
-fs_profile($profile_names, $action) if ($profile_names);
+fs_profile($profile_names, $action) if ($profile_names && !$gateway_names);
+fs_gateway($profile_names, $gateway_names, $action, $action_name, $action_val) if ($profile_names && $gateway_names);
 exit 0;
 
 sub fs_profile {
@@ -88,6 +108,26 @@ sub fs_profile {
         exit 1;
     }
     else {
+        print "$res\n";
+    }
+}
+sub fs_gateway {
+    my ($profile, $name, $action, $action_name, $action_val) = @_;
+    #my $name = shift;
+    my $config = new Vyatta::FreeSWITCH::Config;
+    $config->setup();
+    my ($cmd, $err) = $config->get_command();
+    #print "fs_profile\n";    
+    if (defined($err)) {
+        print STDERR "FreeSWITCH configuration error: $err.\n";
+        exit 1;
+    }
+    my ($res, $er) = $config->confGateway($name, $profile, $action, $action_name, $action_val);
+    if (defined($er)) {
+        print STDERR "FreeSWITCH configuration profile error: $er.\n";
+        exit 1;
+    }
+    elsif (defined($res)) {
         print "$res\n";
     }
 }

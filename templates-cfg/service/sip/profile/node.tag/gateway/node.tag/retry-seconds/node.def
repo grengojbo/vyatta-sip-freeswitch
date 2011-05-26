@@ -1,0 +1,6 @@
+type: u32
+help: How many seconds before a retry when a failure or timeout occurs
+syntax:expression: $VAR(@) > 0 && $VAR(@) < 65536;
+                   "Port must be between 1 and 65535"
+commit:expression: exec "sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --profile=$VAR(../../@) --gateway=$VAR(../@) --action=update"
+delete:expression: exec "sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --profile=$VAR(../../@) --gateway=$VAR(../@) --action=delete --delete=n"
