@@ -534,7 +534,14 @@ sub confProfile {
 
     my $fs_profile_file = $fs_profile_dir."/$name.xml";
     if ($action eq 'delete') {
-        $cmd = "Delete profile: $name\n";
+        if (-e $fs_profile_file) {
+            unlink($fs_profile_file);
+            system("rm -Rf $fs_profile_dir/$name");
+            $cmd = "Delete profile: $name (successfully).\n";
+        }
+        else {
+            $cmd = "File was not deleted.\n"
+        }
         return ($cmd, undef);
     }
     else {
@@ -687,8 +694,8 @@ sub confProfile {
         push @{ $fs_config->{settings}->{param} }, { name => 'inbound-late-negotiation', value => $inbound_late_negotiation } if (defined($inbound_late_negotiation) && !defined($inbound_late_negotiation_def));
         #push @{ $fs_config->{settings}->{param} }, { name => '', value => $ } if (defined($) && !defined($));
         my $fs_config_new = XML::Simple->new(rootname=>'profile');
-        #open my $fh, '>:encoding(UTF-8)', $fs_profile or die "open($fs_profile): $!";
-        #$fs_config_new->XMLout($fs_config, OutputFile => $fh);
+        open my $fh, '>:encoding(UTF-8)', $fs_profile_file or die "open($fs_profile_file): $!";
+        $fs_config_new->XMLout($fs_config, OutputFile => $fh);
         $cmd = $fs_config_new->XMLout($fs_config);
         return ($cmd, undef);
     }

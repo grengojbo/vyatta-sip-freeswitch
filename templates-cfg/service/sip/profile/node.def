@@ -5,13 +5,8 @@ help: Name SIP profile
 syntax:expression: pattern $VAR(@) "^[-_a-zA-Z0-9.]+$" ; "invalid Profile name \"$VAR(@)\""
 create:expression: exec "sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --profile=$VAR(@) --action=create"
 end: if [ ${COMMIT_ACTION} = 'DELETE' ]; then
-        #echo "Action DELETE";
-        # Action SET = create
         sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --profile=$VAR(@) --action=delete;
     fi;
     if [ ${COMMIT_ACTION} = 'ACTIVE' ]; then
         sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --profile=$VAR(@) --action=update;
     fi;
-    #else
-    #    #echo "Action ${COMMIT_ACTION}";
-    #fi;

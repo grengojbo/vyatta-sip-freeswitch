@@ -1,9 +1,19 @@
 priority: 994
 help: Configuration open source telephony platform (SIP) for FreeSWITCH server or PBX
-delete:sudo /usr/sbin/invoke-rc.d freeswitch stop
-    sudo sed -i -e '/^FREESWITCH_ENABLED="/s/true/false/' /etc/default/freeswitch
 create:sudo sed -i -e '/^FREESWITCH_ENABLED="/s/false/true/' /etc/default/freeswitch
     #sudo /usr/sbin/invoke-rc.d freeswitch start
-end:echo "SIP end"
-
+end: if [ ${COMMIT_ACTION} = 'DELETE' ]; then
+        echo "Action DELETE";
+        #sudo /usr/sbin/invoke-rc.d freeswitch stop;
+        sudo sed -i -e '/^FREESWITCH_ENABLED="/s/true/false/' /etc/default/freeswitch;
+        # Action SET = create
+    fi;
+    if [ ${COMMIT_ACTION} = 'ACTIVE' ]; then
+        echo "reload FreeSWITCH";
+        #sudo /usr/sbin/invoke-rc.d freeswitch reload;
+        #sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --profile=$VAR(@) --action=update;
+    fi;
+    #else
+    #    #echo "Action ${COMMIT_ACTION}";
+    #fi;
 
