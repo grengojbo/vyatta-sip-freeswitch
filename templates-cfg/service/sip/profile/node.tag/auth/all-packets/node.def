@@ -1,4 +1,3 @@
 type: txt
 help: On authed calls, authenticate all the packets not just invite
 syntax:expression: $VAR(@) in "true", "false"
-update:sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --profile=$VAR(../../@) --action=update

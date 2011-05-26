@@ -520,7 +520,7 @@ sub confGateway {
 }
 sub confProfile {
     my ($self, $name, $action) = @_;
-    print "exec confProfile\n";
+    #print "exec confProfile\n";
     my $address = undef;
     my $cmd = undef;
     my $fs_profile = undef;
@@ -588,6 +588,14 @@ sub confProfile {
         my $bitpacking = (defined($config->returnValue("profile $name codec bitpacking")) && $config->returnValue("profile $name codec bitpacking") eq 'enable') ? 'aal2' : undef;
         my $inbound_codec_negotiation = (defined($config->returnValue("profile $name codec negotiation"))) ? $config->returnValue("profile $name codec negotiation") : 'generous';
         my $inbound_late_negotiation = (defined($config->returnValue("profile $name codec late-negotiation"))) ? $config->returnValue("profile $name codec late-negotiation") : undef;
+        my $local_network_acl = (defined($config->returnValue("profile $name acl local-network"))) ? $config->returnValue("profile $name acl local-network") : undef;
+        my $local_network_acl_def = undef;
+        my $apply_inbound_acl = (defined($config->returnValue("profile $name acl inbound"))) ? $config->returnValue("profile $name acl inbound") : undef;
+        my $apply_inbound_acl_def = undef;
+        my $apply_register_acl = (defined($config->returnValue("profile $name acl register"))) ? $config->returnValue("profile $name acl register") : undef;
+        my $apply_register_acl_def = undef;
+        my $apply_proxy_acl = (defined($config->returnValue("profile $name acl proxy"))) ? $config->returnValue("profile $name acl proxy") : undef;
+        my $apply_proxy_acl_def = undef;
         if ($action eq 'create' && $mode eq 'internal') {
             $auth_all_packets = 'false';
             $auth_calls = 'true';
@@ -610,6 +618,9 @@ sub confProfile {
         else {
             return (undef, "Not exists example profile: $fs_profile_example and profile $fs_profile\n");
         }
+        #my $ = (defined($config->returnValue("profile $name "))) ? $config->returnValue("profile $name ") : '';
+        #return (undef, "Must specify \"profile $name gateway $name \"") if (!defined($));
+        #push @a, {name => '', value => $ } if (defined($));
         my $fs_config = XMLin($fs_profile, KeyAttr=>{});
         delete $fs_config->{aliases};
         delete $fs_config->{gateways};
@@ -648,14 +659,33 @@ sub confProfile {
                 $fs->{value} = $inbound_late_negotiation;
                 $inbound_late_negotiation_def = 1;
             }
+            elsif ($fs->{name} eq 'local-network-acl') {
+                $fs->{value} = $local_network_acl;
+                $local_network_acl_def = 1;
+            }
+            elsif ($fs->{name} eq 'apply-inbound-acl') {
+                $fs->{value} = $apply_inbound_acl;
+                $apply_inbound_acl_def = 1;
+            }
+            elsif ($fs->{name} eq 'apply-register-acl') {
+                $fs->{value} = $apply_register_acl;
+                $apply_register_acl_def = 1;
+            }
+            elsif ($fs->{name} eq 'apply-proxy-acl') {
+                $fs->{value} = $apply_proxy_acl;
+                $apply_proxy_acl_def = 1;
+            }
             #elsif ($fs->{name} eq '') { $fs->{value} = $; }
         }
+        push @{ $fs_config->{settings}->{param} }, {name => 'apply-inbound-acl', value => $apply_inbound_acl } if (defined($apply_inbound_acl) && !defined($apply_inbound_acl_def));
+        push @{ $fs_config->{settings}->{param} }, {name => 'apply-register-acl', value => $apply_register_acl } if (defined($apply_register_acl) && !defined($apply_register_acl_def));
+        push @{ $fs_config->{settings}->{param} }, {name => 'apply-proxy-acl', value => $apply_proxy_acl } if (defined($apply_proxy_acl) && !defined($apply_proxy_acl_def));
+        push @{ $fs_config->{settings}->{param} }, {name => 'local-network-acl', value => $local_network_acl } if (defined($local_network_acl) && !defined($local_network_acl_def));
         push @{ $fs_config->{settings}->{param} }, { name => 'accept-blind-auth', value => $accept_blind_auth } if (defined($accept_blind_auth) && !defined($accept_blind_auth_def));
         push @{ $fs_config->{settings}->{param} }, { name => 'disable-transcoding', value => $disable_transcoding } if (!defined($disable_transcoding_def));
         push @{ $fs_config->{settings}->{param} }, { name => 'bitpacking', value => $bitpacking } if (defined($bitpacking) && !defined($bitpacking_def));
         push @{ $fs_config->{settings}->{param} }, { name => 'inbound-late-negotiation', value => $inbound_late_negotiation } if (defined($inbound_late_negotiation) && !defined($inbound_late_negotiation_def));
         #push @{ $fs_config->{settings}->{param} }, { name => '', value => $ } if (defined($) && !defined($));
-        # $inbound_late_negotiation
         my $fs_config_new = XML::Simple->new(rootname=>'profile');
         #open my $fh, '>:encoding(UTF-8)', $fs_profile or die "open($fs_profile): $!";
         #$fs_config_new->XMLout($fs_config, OutputFile => $fh);

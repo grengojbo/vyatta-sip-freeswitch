@@ -1,0 +1,3 @@
+type: txt
+help: This defines your local network, by default we detect your local network and create this localnet.auto ACL for this.
+allowed: /opt/vyatta/sbin/vyatta-freeswitch.pl --show=acl

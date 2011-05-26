@@ -1,7 +1,6 @@
 type: txt
 help: Choose the realm challenge key
 syntax:expression: $VAR(@) in "auto_to", "auto_from"
-update:sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --profile=$VAR(../../@) --action=update
 comp_help: Possible completions:
   auto_from    uses the from field as the value for the SIP realm
   auto_to      uses the to field as the value for the SIP realm

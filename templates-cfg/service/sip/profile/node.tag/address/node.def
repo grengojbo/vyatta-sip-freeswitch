@@ -1,6 +1,4 @@
 type: ipv4,ipv6
 help: IP address to bind
-update:expression: exec \
-    "sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --profile=$VAR(../@) --action=update"
 val_help: ipv4; IP address to bind
 val_help: ipv6; IPv6 address to bind

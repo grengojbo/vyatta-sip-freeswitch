@@ -1,4 +1,3 @@
 type: txt
 help: Write log entries ( Warning ) on authentication failures ( Registration & Invite ) useful for users wishing to use fail2ban
 syntax:expression: $VAR(@) in "true", "false"
-update:sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --profile=$VAR(../../@) --action=update

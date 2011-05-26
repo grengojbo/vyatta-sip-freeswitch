@@ -1,4 +1,4 @@
-priority: 992
+priority: 994
 help: Configuration open source telephony platform (SIP) for FreeSWITCH server or PBX
 delete:sudo /usr/sbin/invoke-rc.d freeswitch stop
     sudo sed -i -e '/^FREESWITCH_ENABLED="/s/true/false/' /etc/default/freeswitch

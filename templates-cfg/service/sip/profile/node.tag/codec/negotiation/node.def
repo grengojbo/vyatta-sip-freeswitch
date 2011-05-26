@@ -1,7 +1,6 @@
 type: txt
 help: If you want your codec list to take precedence
 syntax:expression: $VAR(@) in "generous", "greedy", "scrooge"
-update:sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --profile=$VAR(../../@) --action=update
 comp_help: Possible completions:
   generous      permits the remote codec list have precedence and the codec negotiation and selection process
   greedy        forces a win by the local FreeSWITCH preference list

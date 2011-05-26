@@ -2,7 +2,6 @@ multi:
 type: txt
 help: This parameter allows to change the outbound codecs per profile
 allowed: /opt/vyatta/sbin/vyatta-freeswitch.pl --show=allowcodecs
-update:sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --profile=$VAR(../../@) --action=update
 comp_help: Possible completions:
     g723       G.723.1 codec 
     g729       G.729 codec
