@@ -85,7 +85,7 @@ else {
     $action_name = 'update';
 }
 #show_interfaces($show_names)		if ($show_names);
-fs_conf($conf_name) if ($conf_name);
+fs_conf($conf_name, $action) if ($conf_name);
 fs_show($show_names) if ($show_names);
 fs_profile($profile_names, $action) if ($profile_names && !$gateway_names);
 fs_gateway($profile_names, $gateway_names, $action, $action_name, $action_val) if ($profile_names && $gateway_names);
@@ -96,7 +96,7 @@ sub fs_profile {
     #my $name = shift;
     my $config = new Vyatta::FreeSWITCH::Config;
     $config->setup();
-    my ($cmd, $err) = $config->get_command();
+    my ($cmd, $err) = $config->get_command() if ($action ne 'delete') ;
     #print "fs_profile\n";    
     if (defined($err)) {
         print STDERR "FreeSWITCH configuration error: $err.\n";
@@ -116,7 +116,7 @@ sub fs_gateway {
     #my $name = shift;
     my $config = new Vyatta::FreeSWITCH::Config;
     $config->setup();
-    my ($cmd, $err) = $config->get_command();
+    my ($cmd, $err) = $config->get_command() if ($action ne 'delete') ;
     #print "fs_profile\n";    
     if (defined($err)) {
         print STDERR "FreeSWITCH configuration error: $err.\n";
@@ -132,15 +132,15 @@ sub fs_gateway {
     }
 }
 sub fs_conf {
-    my $name = shift;
+    my ($name, $action) = @_;
+    #my $name = shift;
     
     my $config = new Vyatta::FreeSWITCH::Config;
     $config->setup();
 
     #my $config = new Vyatta::Config;
     #$config->setLevel("service sip");
-    
-    my ($cmd, $err) = $config->get_command();
+    my ($cmd, $err) = $config->get_command() if ($action ne 'delete') ;
     
     #if (!defined($self->{_secret_file}) && !defined($self->{_tls_def}));
     #if (!defined($config->returnValue("domain-name"))) {

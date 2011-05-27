@@ -1,6 +1,3 @@
 type: txt
 help: Is used when this profile acts as a client to another UA
 syntax:expression: $VAR(@) in "true", "false"
-
-commit:expression: exec "sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --profile=$VAR(../../@) --gateway=$VAR(../@) --action=update"
-delete:expression: exec "sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --profile=$VAR(../../@) --gateway=$VAR(../@) --action=delete --delete=n"

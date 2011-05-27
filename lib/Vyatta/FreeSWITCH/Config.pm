@@ -237,6 +237,8 @@ sub setup {
   $self->{_zrtp_secure_media} = $config->returnValue('zrtp-secure-media');
   my @tmp_user = $config->returnValues('_user');
   $self->{_user} = \@tmp_user;
+  my @tmp_profiles = $config->listNodes("profile");
+  $self->{_profile} = \@tmp_profiles;
   my @tmp_acls = $config->listNodes('acl');
   $self->{_acls} = \@tmp_acls;
   if (scalar(@{$self->{_acls}}) > 0) {
@@ -291,6 +293,7 @@ sub get_command {
   return (undef, 'Must specify "language"') if (scalar(@{$self->{_language}}) == 0);
   return (undef, 'Must specify "default-language"') if (!defined($self->{_default_language}));
   return (undef, 'Must specify "codecs"') if (scalar(@{$self->{_codecs}}) == 0);
+  return (undef, 'Must specify "profile"') if (scalar(@{$self->{_profile}}) == 0);
   if (defined($self->{_cli})) {
     return (undef, 'Must specify "set service sip cli password"') if (!defined($self->{_cli_password}));
     return (undef, 'Must specify "set service sip cli listen-port"') if (!defined($self->{_cli_port}));
@@ -584,7 +587,7 @@ sub confProfile {
         if (defined($config->returnValue("profile $name context"))) {
             $context = $config->returnValue("profile $name context");
         }
-        if (defined($config->returnValue("profile $name codec transcoding")) && $config->returnValue("profile $name codec transcoding") eq 'diable') {
+        if (defined($config->returnValue("profile $name codec transcoding")) && $config->returnValue("profile $name codec transcoding") eq 'disable') {
             $disable_transcoding = 'true';
         }
         my $challenge_realm = (defined($config->returnValue("profile $name auth challenge-realm"))) ? $config->returnValue("profile $name auth challenge-realm") : 'auto_from';
@@ -636,6 +639,7 @@ sub confProfile {
             $fs_config->{gateways}->{cmd} = "include";
             $fs_config->{gateways}->{data} = "$name/*.xml";
         }
+        my $i = 0;
         foreach my $fs (@{$fs_config->{settings}->{param}}) {
             if ($fs->{name} eq 'sip-ip') { $fs->{value} = $address; }
             elsif ($fs->{name} eq 'rtp-ip') { $fs->{value} = $rtp_ip; }
@@ -645,54 +649,64 @@ sub confProfile {
             elsif ($fs->{name} eq 'context') { $fs->{value} = $context; }
             elsif ($fs->{name} eq 'log-auth-failures') { $fs->{value} = $log_auth_failures; }
             elsif ($fs->{name} eq 'challenge-realm') { $fs->{value} = $challenge_realm; }
+            elsif ($fs->{name} eq 'inbound-codec-prefs') { $fs->{value} = $inbound_codec_prefs; }
+            elsif ($fs->{name} eq 'outbound-codec-prefs') { $fs->{value} = $outbound_codec_prefs; }
+            elsif ($fs->{name} eq 'inbound-codec-negotiation') { $fs->{value} = $inbound_codec_negotiation; }
             elsif ($fs->{name} eq 'accept-blind-auth') {
                 $fs->{value} = $accept_blind_auth; 
-                $accept_blind_auth_def = 1;
+                $accept_blind_auth_def = $i;
             }
             elsif ($fs->{name} eq 'auth-all-packets') { $fs->{value} = $auth_all_packets; }
             elsif ($fs->{name} eq 'auth-calls') { $fs->{value} = $auth_calls; }
             elsif ($fs->{name} eq 'disable-transcoding') { 
                 $fs->{value} = $disable_transcoding; 
-                $disable_transcoding_def = 1;
+                $disable_transcoding_def = $i;
             }
-            elsif ($fs->{name} eq 'bitpacking' && defined($bitpacking)) { 
+            elsif ($fs->{name} eq 'bitpacking') { 
                 $fs->{value} = $bitpacking;
-                $bitpacking_def = 1;
+                $bitpacking_def = $i;
             }
-            elsif ($fs->{name} eq 'inbound-codec-prefs') { $fs->{value} = $inbound_codec_prefs; }
-            elsif ($fs->{name} eq 'outbound-codec-prefs') { $fs->{value} = $outbound_codec_prefs; }
-            elsif ($fs->{name} eq 'inbound-codec-negotiation') { $fs->{value} = $inbound_codec_negotiation; }
             elsif ($fs->{name} eq 'inbound-late-negotiation') {
                 $fs->{value} = $inbound_late_negotiation;
-                $inbound_late_negotiation_def = 1;
+                $inbound_late_negotiation_def = $i;
             }
             elsif ($fs->{name} eq 'local-network-acl') {
                 $fs->{value} = $local_network_acl;
-                $local_network_acl_def = 1;
+                $local_network_acl_def = $i;
             }
             elsif ($fs->{name} eq 'apply-inbound-acl') {
                 $fs->{value} = $apply_inbound_acl;
-                $apply_inbound_acl_def = 1;
+                $apply_inbound_acl_def = $i;
             }
             elsif ($fs->{name} eq 'apply-register-acl') {
                 $fs->{value} = $apply_register_acl;
-                $apply_register_acl_def = 1;
+                $apply_register_acl_def = $i;
             }
             elsif ($fs->{name} eq 'apply-proxy-acl') {
                 $fs->{value} = $apply_proxy_acl;
-                $apply_proxy_acl_def = 1;
+                $apply_proxy_acl_def = $i;
             }
             #elsif ($fs->{name} eq '') { $fs->{value} = $; }
+            $i++;
         }
         push @{ $fs_config->{settings}->{param} }, {name => 'apply-inbound-acl', value => $apply_inbound_acl } if (defined($apply_inbound_acl) && !defined($apply_inbound_acl_def));
+        splice(@{$fs_config->{settings}->{param}}, $apply_inbound_acl_def, 1) if (!defined($apply_inbound_acl) && defined($apply_inbound_acl_def));
         push @{ $fs_config->{settings}->{param} }, {name => 'apply-register-acl', value => $apply_register_acl } if (defined($apply_register_acl) && !defined($apply_register_acl_def));
+        splice(@{$fs_config->{settings}->{param}}, $apply_register_acl_def, 1) if (!defined($apply_register_acl) && defined($apply_register_acl_def));
         push @{ $fs_config->{settings}->{param} }, {name => 'apply-proxy-acl', value => $apply_proxy_acl } if (defined($apply_proxy_acl) && !defined($apply_proxy_acl_def));
+        splice(@{$fs_config->{settings}->{param}}, $apply_proxy_acl_def, 1) if (!defined($apply_proxy_acl) && defined($apply_proxy_acl_def));
         push @{ $fs_config->{settings}->{param} }, {name => 'local-network-acl', value => $local_network_acl } if (defined($local_network_acl) && !defined($local_network_acl_def));
+        splice(@{$fs_config->{settings}->{param}}, $local_network_acl_def, 1) if (!defined($local_network_acl) && defined($local_network_acl_def));
         push @{ $fs_config->{settings}->{param} }, { name => 'accept-blind-auth', value => $accept_blind_auth } if (defined($accept_blind_auth) && !defined($accept_blind_auth_def));
+        splice(@{$fs_config->{settings}->{param}}, $accept_blind_auth_def, 1) if (!defined($accept_blind_auth) && defined($accept_blind_auth_def));
         push @{ $fs_config->{settings}->{param} }, { name => 'disable-transcoding', value => $disable_transcoding } if (!defined($disable_transcoding_def));
+        #splice(@{$fs_config->{settings}->{param}}, $, 1) if (!defined($) && defined($));
         push @{ $fs_config->{settings}->{param} }, { name => 'bitpacking', value => $bitpacking } if (defined($bitpacking) && !defined($bitpacking_def));
+        splice(@{$fs_config->{settings}->{param}}, $bitpacking_def, 1) if (!defined($bitpacking) && defined($bitpacking_def));
         push @{ $fs_config->{settings}->{param} }, { name => 'inbound-late-negotiation', value => $inbound_late_negotiation } if (defined($inbound_late_negotiation) && !defined($inbound_late_negotiation_def));
+        splice(@{$fs_config->{settings}->{param}}, $inbound_late_negotiation_def, 1) if (!defined($inbound_late_negotiation) && defined($inbound_late_negotiation_def));
         #push @{ $fs_config->{settings}->{param} }, { name => '', value => $ } if (defined($) && !defined($));
+        #splice(@{$fs_config->{settings}->{param}}, $, 1) if (!defined($) && defined($));
         my $fs_config_new = XML::Simple->new(rootname=>'profile');
         open my $fh, '>:encoding(UTF-8)', $fs_profile_file or die "open($fs_profile_file): $!";
         $fs_config_new->XMLout($fs_config, OutputFile => $fh);

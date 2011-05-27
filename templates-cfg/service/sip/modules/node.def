@@ -2,5 +2,8 @@ multi:
 type: txt
 help: Modules
 allowed: /opt/vyatta/sbin/vyatta-freeswitch.pl --show=modules
-create:sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --conf=modules
-delete:sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --conf=modules
+end: if [ ${COMMIT_ACTION} = 'DELETE' ]; then
+        sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --conf=modules --action=delete;
+    else
+        sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --conf=modules;
+    fi;

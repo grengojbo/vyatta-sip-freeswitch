@@ -1,5 +1,3 @@
 type: txt
 help: is used to force what the contact info will be in the registration. If you are having a problem with the default registering as gw+gateway_name@ip you can set this to true to use extension@ip. If extension is blank, it will use username@ip.
 syntax:expression: $VAR(@) in "true", "false"
-commit:expression: exec "sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --profile=$VAR(../../@) --gateway=$VAR(../@) --action=update"
-delete:expression: exec "sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --profile=$VAR(../../@) --gateway=$VAR(../@) --action=delete --delete=n"

@@ -2,5 +2,3 @@ type: u32
 help: Expire in seconds
 syntax:expression: $VAR(@) > 49 && $VAR(@) < 36001;
                    "Port must be between 50 and 36000"
-commit:expression: exec "sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --profile=$VAR(../../@) --gateway=$VAR(../@) --action=update"
-delete:expression: exec "sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --profile=$VAR(../../@) --gateway=$VAR(../@) --action=delete --delete=n"

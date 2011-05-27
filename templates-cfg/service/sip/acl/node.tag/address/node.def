@@ -1,9 +1,5 @@
 tag:
 type: ipv4net,ipv6net
 help: IP address
-commit:expression: exec \
-    "sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --conf=acl"
-delete:expression: exec \
-    "sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --conf=acl"
 val_help: ipv4net; IP address and prefix length
 val_help: ipv6net; IPv6 address and prefix length

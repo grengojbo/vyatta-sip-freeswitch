@@ -2,7 +2,6 @@ type: txt
 help: Set FreeSWITCH preset profile gateway mode
 syntax:expression: $VAR(@) in "trunk", "register";
                    "Must be \"trunk\" or \"register\""
-commit:expression: exec "sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --profile=$VAR(../../@) --gateway=$VAR(../@) --action=update"
 comp_help: Possible completions:
   trunk       Without registration login and password
   register    Check with the provider of your login and password
