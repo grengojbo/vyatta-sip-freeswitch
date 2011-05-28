@@ -44,7 +44,7 @@ use warnings;
 
 my $fs_conf_dir = '/opt/freeswitch/conf';
 
-my ($conf_name, $show_names, $user_names, $reload_names, $profile_names, $gateway_names, $action, $action_update, $action_delete, $action_create, $action_name, $action_val);
+my ($conf_name, $show_names, $user_names, $reload_names, $profile_names, $gateway_names, $action, $action_update, $action_delete, $action_create, $action_name, $action_val, $cdr_name);
 
 sub usage {
     print <<EOF;
@@ -52,6 +52,7 @@ Usage: $0 --conf=<acl|cli|switch|lang|modules>
        $0 --show=<acl|codecs|lang|allowlang|modules>
        $0 --reload=<xml|dialplan>
        $0 --profile=<name_profile> [--gateway=<name_gateway>] [--action=<create|update|delete>] [--update|--delete|-create=<var_name>]
+       $0 --cdr=<name_cdr> [--action=<create|update|delete>] [--update|--delete|-create=<var_name>]
        $0 --user=<name_user>
 EOF
     exit 1;
@@ -63,6 +64,7 @@ GetOptions("conf=s"  => \$conf_name,
        "profile=s"	       => \$profile_names,
        "gateway=s"	       => \$gateway_names,
        "user=s"	       => \$user_names,
+       "cdr=s"	       => \$cdr_name,
        "action=s"	       => \$action,
        "update=s"	       => \$action_update,
        "create=s"	       => \$action_create,
@@ -88,6 +90,7 @@ else {
 fs_conf($conf_name, $action) if ($conf_name);
 fs_show($show_names) if ($show_names);
 fs_profile($profile_names, $action) if ($profile_names && !$gateway_names);
+fs_cdr($cdr_name, $action) if ($cdr_name);
 fs_gateway($profile_names, $gateway_names, $action, $action_name, $action_val) if ($profile_names && $gateway_names);
 exit 0;
 
@@ -131,6 +134,20 @@ sub fs_gateway {
         print "$res\n";
     }
 }
+sub fs_cdr {
+    my ($name, $action) = @_;
+    my $config = new Vyatta::FreeSWITCH::Config;
+    $config->setup();
+    my ($cmd, $err) = $config->get_command() if ($action ne 'delete') ;
+    if (defined($cmd)) {
+            my ($res, $err) = $config->confCdr($name, $action);
+            $config->confModules();
+    }
+    if (defined($err)) {
+        print STDERR "FreeSWITCH configuration error: $err.\n";
+    exit 1;
+    }
+}    
 sub fs_conf {
     my ($name, $action) = @_;
     #my $name = shift;
@@ -159,6 +176,11 @@ sub fs_conf {
         }
         elsif ($name eq 'cli') {
             $config->confCli();
+            $config->confModules();
+        }
+        elsif ($name eq 'cdr') {
+            #my ($res, $err) = $config->confCdr();
+            #print $res;
             $config->confModules();
         }
         elsif ($name eq 'modules') {

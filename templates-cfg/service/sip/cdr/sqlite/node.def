@@ -1,0 +1,3 @@
+help: SQLite CDR Module
+create:expression: exec "sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --cdr=sqlite --action=create"
+delete:expression: exec "sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --cdr=sqlite --action=delete"

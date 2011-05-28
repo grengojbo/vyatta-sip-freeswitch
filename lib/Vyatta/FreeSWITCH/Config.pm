@@ -56,7 +56,14 @@ my %fields = (
   _cli_password => undef,
   #_cli_acl      => undef,
   _acl          => undef,
+  _cdr_csv      => undef,
+  _cdr_sqlite   => undef,
+  _cdr_xml      => undef,
+  _cdr_radius   => undef,
+  _cdr_pg       => undef,
+  _cdr_json     => undef,
   _profile_name => undef,
+  _cdr         => [],
   _acls         => [],
   _acl_list     => [],
   _codecs       => [],
@@ -110,7 +117,16 @@ my %modules_codecs_hash = (
     #<!--<'' =>'mod_opus',-->
 );
 
-my @modules_unsuport = ('voicemail', 'xml_cdr', 'curl', 'conference', 'perl', 'python', 'billing', 'enum', 'rpc', 'event-multicast', 'dingaling', 'portaudio', 'skinny', 'directory', 'distributor', 'lcr', 'spy', 'snom',   'dialplan-directory', 'dialplan-asterisk', 'shout', 'spidermonkey', 'flite', 'tts-commandline', 'rss', 'fifo'); 
+my @modules_unsuport = ('voicemail', 'curl', 'conference', 'perl', 'python', 'billing', 'enum', 'rpc', 'event-multicast', 'dingaling', 'portaudio', 'skinny', 'directory', 'distributor', 'lcr', 'spy', 'snom',   'dialplan-directory', 'dialplan-asterisk', 'shout', 'spidermonkey', 'flite', 'tts-commandline', 'rss', 'fifo');
+my @modules_cdr = ('xml', 'csv', 'sqlite', 'postgresql', 'json', 'radius');
+my %modules_cdr_hash = (
+    'xml' => 'xml_cdr',
+    'json' => 'json_cdr',
+    'radius' => 'radius_cdr',
+    'csv' => 'cdr_csv',
+    'sqlite' => 'cdr_sqlite',
+    'postgresql' => 'cdr_pg_csv',
+);
 my %modules_cmd_hash = (
     'voicemail' =>'mod_voicemail',
     'xml_cdr' =>'mod_xml_cdr',
@@ -239,6 +255,8 @@ sub setup {
   $self->{_user} = \@tmp_user;
   my @tmp_profiles = $config->listNodes("profile");
   $self->{_profile} = \@tmp_profiles;
+  my @tmp_cdr = $config->listNodes('cdr');
+  $self->{_cdr} = \@tmp_cdr;
   my @tmp_acls = $config->listNodes('acl');
   $self->{_acls} = \@tmp_acls;
   if (scalar(@{$self->{_acls}}) > 0) {
@@ -298,6 +316,14 @@ sub get_command {
     return (undef, 'Must specify "set service sip cli password"') if (!defined($self->{_cli_password}));
     return (undef, 'Must specify "set service sip cli listen-port"') if (!defined($self->{_cli_port}));
     return (undef, 'Must specify "set service sip cli listen-address"') if (!defined($self->{_cli_address}));
+  }
+  if (scalar(@{$self->{_cdr}}) > 0) {
+    for my $rem (@{$self->{_cdr}}) {
+        my $mod_file = $fs_dir."/mod/mod_".$modules_cdr_hash{$rem}.".so";
+      if (!-e $mod_file) {
+          return (undef, "Module is not installed: $mod_file");
+      }
+    }
   }
   return ($cmd, undef);
 }
@@ -363,6 +389,14 @@ sub confModules {
     if (scalar(@{$self->{_language}}) > 0) {
         for my $rem (@{$self->{_language}}) {
             push @{ $fs_config->{modules}->{load} }, { 'module' => "mod_say_$rem" };
+        }
+    }
+    if (scalar(@{$self->{_cdr}}) > 0) {
+        for my $rem (@{$self->{_cdr}}) {
+            #print $fs_dir."/mod/mod_".$modules_cdr_hash{$rem}.".so\n";
+            if (-e $fs_dir."/mod/mod_".$modules_cdr_hash{$rem}.".so") {
+                push @{ $fs_config->{modules}->{load} }, { 'module' => "mod_".$modules_cdr_hash{$rem} };
+            }
         }
     }
     if (scalar(@{$self->{_modules}}) > 0) {
@@ -710,11 +744,67 @@ sub confProfile {
         my $fs_config_new = XML::Simple->new(rootname=>'profile');
         open my $fh, '>:encoding(UTF-8)', $fs_profile_file or die "open($fs_profile_file): $!";
         $fs_config_new->XMLout($fs_config, OutputFile => $fh);
-        $cmd = $fs_config_new->XMLout($fs_config);
+        #$cmd = $fs_config_new->XMLout($fs_config);
+        #$cmd = "Create Gateway: $fs_gateway\n";
+        $cmd = undef;
         return ($cmd, undef);
     }
     
 }
+sub confCdr {
+    my ($self, $name, $action) = @_;
+    if ($name eq 'xmlllllllll') {
+        #my $fs_config = XMLin($fs_event_socket, KeyAttr=>{});
+        #my $ = (defined($config->returnValue("profile $name "))) ? $config->returnValue("profile $name ") : undef;
+        #my $_def = undef;
+        my $i = 0;
+        #foreach my $fs (@{$fs_config->{settings}->{param}}) {
+        #    elsif ($fs->{name} eq '') {
+        #        $fs->{value} = $;
+        #        $_def = $i;
+        #    }
+        #    $i++;
+        #}
+        #push @{ $fs_config->{settings}->{param} }, { name => '', value => $ } if (defined($) && !defined($));
+        #splice(@{$fs_config->{settings}->{param}}, $, 1) if (!defined($) && defined($));
+        
+        #open my $fh, '>:encoding(UTF-8)', $fs_profile_file or die "open($fs_profile_file): $!";
+        #$fs_config_new->XMLout($fs_config, OutputFile => $fh);
+        #$cmd = $fs_config_new->XMLout($fs_config);
+        #$cmd = "Create cdr: $fs_\n";
+        #$cmd = undef;
+        #return ($cmd, undef);
+    }
+    else {
+        return ("no cdr module $name\n", undef);
+    }
+}
+#sub confTemp {
+    #my ($self, $name, $action) = @_;
+    #my $fs_config = XMLin($fs_event_socket, KeyAttr=>{});
+    #if ($name eq 'xml') {
+        ##my $ = (defined($config->returnValue("profile $name "))) ? $config->returnValue("profile $name ") : undef;
+        ##my $_def = undef;
+        #my $i = 0;
+        #foreach my $fs (@{$fs_config->{settings}->{param}}) {
+            #elsif ($fs->{name} eq '') {
+                #$fs->{value} = $;
+                #$_def = $i;
+            #}
+            #$i++;
+        #}
+        ##push @{ $fs_config->{settings}->{param} }, { name => '', value => $ } if (defined($) && !defined($));
+        ##splice(@{$fs_config->{settings}->{param}}, $, 1) if (!defined($) && defined($));
+        
+        #open my $fh, '>:encoding(UTF-8)', $fs_profile_file or die "open($fs_profile_file): $!";
+        #$fs_config_new->XMLout($fs_config, OutputFile => $fh);
+        ##$cmd = $fs_config_new->XMLout($fs_config);
+        ##$cmd = "Create Gateway: $fs_gateway\n";
+        #$cmd = undef;
+        #return ($cmd, undef);
+    #}
+#}
+
 sub confCli {
     my ($self) = @_;
     my $fs_config = XMLin($fs_event_socket, KeyAttr=>{});
@@ -762,6 +852,8 @@ sub confSwitch {
     open my $fh, '>:encoding(UTF-8)', $fs_switch or die "open($fs_switch): $!";
     $fs_config_new->XMLout($fs_config, OutputFile=>$fh);
     #print $fs_config_new->XMLout($fs_config, xmldecl=>'<?xml version="1.0">');
+    #$cmd = "Create Gateway: $fs_gateway\n";
+    #$cmd = undef;
     print "exec confSwitch\n";
 }
 

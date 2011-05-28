@@ -8,6 +8,7 @@ sbin_SCRIPTS = scripts/vyatta-freeswitch.pl
 sbin_SCRIPTS += scripts/vyatta-freeswitch-vars
 
 share_perl5_DATA = lib/Vyatta/FreeSWITCH/Config.pm
+share_perl5_DATA += lib/Vyatta/FreeSWITCH/TestConfig.pm
 curver_DATA = conf/internal.xml
 curver_DATA += conf/internal-ipv6.xml
 curver_DATA += conf/external.xml

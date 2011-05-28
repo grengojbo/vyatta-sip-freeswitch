@@ -1,0 +1,3 @@
+help: CSV call detail record handler
+create:expression: exec "sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --cdr=csv --action=create"
+delete:expression: exec "sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --cdr=csv --action=delete"

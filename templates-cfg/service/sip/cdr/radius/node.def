@@ -1,0 +1,3 @@
+help: RADIUS CDR Module
+create:expression: exec "sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --cdr=radius --action=create"
+delete:expression: exec "sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --cdr=radius --action=delete"

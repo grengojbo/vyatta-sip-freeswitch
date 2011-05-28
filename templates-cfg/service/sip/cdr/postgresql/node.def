@@ -1,0 +1,3 @@
+help: Asterisk Compatible CDR Module with PostgreSQL interface
+create:expression: exec "sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --cdr=postgresql --action=create"
+delete:expression: exec "sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --cdr=postgresql --action=delete"

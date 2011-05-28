@@ -1,0 +1,11 @@
+priority: 993
+help: CDR records
+create:expression: exec "sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --conf=modules --action=create"
+end: if [ ${COMMIT_ACTION} = 'DELETE' ]; then
+        echo "CDR records delete";
+        sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --conf=modules --action=delete;
+    fi;
+    if [ ${COMMIT_ACTION} = 'ACTIVE' ]; then
+        echo "CDR records";
+        sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --conf=modules --action=update;
+    fi;

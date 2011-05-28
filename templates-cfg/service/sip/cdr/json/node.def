@@ -1,0 +1,3 @@
+help: JSON CDR Module to files or curl
+create:expression: exec "sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --cdr=json --action=create"
+delete:expression: exec "sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --cdr=json --action=delete"
