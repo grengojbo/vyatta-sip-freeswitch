@@ -1,0 +1,5 @@
+type: txt
+help: Specify the SSL version to force HTTPS to use
+Which auhtentification scheme to use
+syntax:expression: $VAR(@) in "SSLv3", "TLSv1";
+                    "Valid options are \"SSLv3\" and \"TLSv1\". Otherwise libcurl will auto-negotiate the version."

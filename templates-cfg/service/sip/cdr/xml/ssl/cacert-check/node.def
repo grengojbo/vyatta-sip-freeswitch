@@ -1,0 +1,3 @@
+type: txt
+help: This will enable the CA root certificate check by libcurl
+syntax:expression: $VAR(@) in "true", "false"

@@ -1,0 +1,3 @@
+type: txt
+help: Verify that the server is actually the one listed in the cert
+syntax:expression: $VAR(@) in "true", "false"

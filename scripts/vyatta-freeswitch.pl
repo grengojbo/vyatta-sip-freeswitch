@@ -142,6 +142,9 @@ sub fs_cdr {
     if (defined($cmd)) {
             my ($res, $err) = $config->confCdr($name, $action);
             $config->confModules();
+            if (defined($res)) {
+                print $res;
+            }
     }
     if (defined($err)) {
         print STDERR "FreeSWITCH configuration error: $err.\n";

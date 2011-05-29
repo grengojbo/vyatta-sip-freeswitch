@@ -1,0 +1,3 @@
+type: txt
+help: If not present we do not log every record to disk
+syntax:expression: $VAR(@) in "true", "false"

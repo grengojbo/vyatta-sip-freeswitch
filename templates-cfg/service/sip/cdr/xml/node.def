@@ -1,1 +1,9 @@
+priority: 992
 help: XML-based call detail record handler
+create:expression: exec "sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --cdr=xml --action=create"
+end: if [ ${COMMIT_ACTION} = 'DELETE' ]; then
+        sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --cdr=xml --action=delete;
+    fi;
+    if [ ${COMMIT_ACTION} = 'ACTIVE' ]; then
+        sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --cdr=xml --action=update;
+    fi;

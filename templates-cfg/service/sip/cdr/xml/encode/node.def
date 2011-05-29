@@ -1,0 +1,5 @@
+type: txt
+help: Encode the post data
+syntax:expression: $VAR(@) in "true", "false", "base64";
+                    "May be \"true\" for url encoding, \"false\" for no encoding or \"base64\" for base64 encoding"
+

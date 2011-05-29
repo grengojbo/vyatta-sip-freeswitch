@@ -1,0 +1,4 @@
+type: u32
+help: The total number of retries to post to webserver incase of failure
+syntax:expression: $VAR(@) > 0 && $VAR(@) < 36001;
+                   "Port must be between 1 and 36000"

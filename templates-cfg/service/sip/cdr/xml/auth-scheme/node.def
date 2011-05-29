@@ -1,0 +1,4 @@
+type: txt
+help: Which auhtentification scheme to use
+syntax:expression: $VAR(@) in "basic", "digest", "NTLM", "GSS-NEGOTIATE", "any";
+                    "Supported values are: basic, digest, NTLM, GSS-NEGOTIATE or \"any\" for automatic detection"

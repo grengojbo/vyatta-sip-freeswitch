@@ -20,6 +20,14 @@ my $fs_acl = $fs_conf_dir.'/autoload_configs/acl.conf.xml';
 my $fs_profile_dir = $fs_conf_dir.'/sip_profiles';
 my $fs_example_dir = '/opt/vyatta/etc/freeswitch';
 
+my %modules_cdr_hash = (
+    'xml' => 'xml_cdr',
+    'json' => 'json_cdr',
+    'radius' => 'radius_cdr',
+    'csv' => 'cdr_csv',
+    'sqlite' => 'cdr_sqlite',
+    'postgresql' => 'cdr_pg_csv',
+);
 my %fields = (
   _cdr_xml      => undef,
   _is_empty      => 1,
@@ -54,6 +62,21 @@ sub confModules {
         } 
     }
     return undef;
+}
+
+sub confCdr {
+    my ($self, $name, $param) = @_;
+    my $fs_cdr = $fs_conf_dir.'/autoload_configs/'.$modules_cdr_hash{$name}.'.conf.xml';
+    my $fs_config = XMLin($fs_cdr);
+    #print Dumper($fs_config);
+    return $fs_config->{settings}->{param}->{$param}->{value};
+    #foreach my $key (@{$fs_config->{settings}->{param}}) {
+    #    #print "$key->{module}=$mod_name\n";
+    #    if ($key->{name} eq $param) {
+    #        return $key->{value};
+    #    } 
+    #}
+    #return undef;
 }
 
 1;

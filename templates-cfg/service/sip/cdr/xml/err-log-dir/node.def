@@ -1,0 +1,3 @@
+type: txt
+help: Full path to the error log dir for failed web posts if not specified its the same as log-dir
+#allowed: "/opt/freeswitch/log/xml_cdr"

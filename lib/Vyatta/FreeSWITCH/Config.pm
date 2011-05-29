@@ -35,6 +35,7 @@ my $fs_event_socket = $fs_conf_dir.'/autoload_configs/event_socket.conf.xml';
 my $fs_acl = $fs_conf_dir.'/autoload_configs/acl.conf.xml';
 my $fs_profile_dir = $fs_conf_dir.'/sip_profiles';
 my $fs_example_dir = '/opt/vyatta/etc/freeswitch';
+
 #my $status_dir = '/opt/vyatta/etc/openvpn/status';
 #my $status_itvl = 30;
 #my $ping_itvl = 10;
@@ -753,27 +754,87 @@ sub confProfile {
 }
 sub confCdr {
     my ($self, $name, $action) = @_;
-    if ($name eq 'xmlllllllll') {
-        #my $fs_config = XMLin($fs_event_socket, KeyAttr=>{});
-        #my $ = (defined($config->returnValue("profile $name "))) ? $config->returnValue("profile $name ") : undef;
-        #my $_def = undef;
-        my $i = 0;
-        #foreach my $fs (@{$fs_config->{settings}->{param}}) {
-        #    elsif ($fs->{name} eq '') {
-        #        $fs->{value} = $;
-        #        $_def = $i;
-        #    }
-        #    $i++;
-        #}
-        #push @{ $fs_config->{settings}->{param} }, { name => '', value => $ } if (defined($) && !defined($));
-        #splice(@{$fs_config->{settings}->{param}}, $, 1) if (!defined($) && defined($));
+    my $fs_cdr = $fs_conf_dir.'/autoload_configs/'.$modules_cdr_hash{$name}.'.conf.xml';
+    my $cmd = undef;
+    my $config = new Vyatta::Config;
+    $config->setLevel("$fsLevel");
+    if ($action eq 'delete') {
+        return ("Delete cdr module $name\n", undef);
+    }
+    elsif ($name eq 'csv') {
+        return ("To edit the settings: $fs_cdr\n", undef);
+    }
+    elsif ($name eq 'xml') {
+        my $url = (defined($config->returnValue("cdr xml url"))) ? $config->returnValue("cdr xml url") : undef;
+        my $username = (defined($config->returnValue("cdr xml username"))) ? $config->returnValue("cdr xml username") : undef;
+        my $password = (defined($config->returnValue("cdr xml password"))) ? $config->returnValue("cdr xml password") : '';
+        my $retries = (defined($config->returnValue("cdr xml retries"))) ? $config->returnValue("cdr xml retries") : undef;
+        my $delay = (defined($config->returnValue("cdr xml delay"))) ? $config->returnValue("cdr xml delay") : undef;
+        my $log_http_and_disk = (defined($config->returnValue("cdr xml log-http-and-disk"))) ? $config->returnValue("cdr xml log-http-and-disk") : undef;
+        my $log_dir = (defined($config->returnValue("cdr xml log-dir"))) ? $config->returnValue("cdr xml log-dir") : undef;
+        my $log_b_leg = (defined($config->returnValue("cdr xml log-b-leg"))) ? $config->returnValue("cdr xml log-b-leg") : 'false';
+        my $prefix_a_leg = (defined($config->returnValue("cdr xml prefix-a-leg"))) ? $config->returnValue("cdr xml prefix-a-leg") : 'true';
+        my $encode = (defined($config->returnValue("cdr xml encode"))) ? $config->returnValue("cdr xml encode") : 'true';
+        my $disable_100_continue = (defined($config->returnValue("cdr xml disable-100-continue"))) ? $config->returnValue("cdr xml disable-100-continue") : undef;
+        my $err_log_dir = (defined($config->returnValue("cdr xml err-log-dir"))) ? $config->returnValue("cdr xml err-log-dir") : undef;
+        my $auth_scheme = (defined($config->returnValue("cdr xml auth-scheme"))) ? $config->returnValue("cdr xml auth-scheme") : undef;
         
-        #open my $fh, '>:encoding(UTF-8)', $fs_profile_file or die "open($fs_profile_file): $!";
-        #$fs_config_new->XMLout($fs_config, OutputFile => $fh);
+        my $enable_cacert_check = (defined($config->returnValue("cdr xml cacert-check"))) ? $config->returnValue("cdr xml cacert-check") : undef;
+        my $enable_ssl_verifyhost = (defined($config->returnValue("cdr xml verifyhost"))) ? $config->returnValue("cdr xml verifyhost") : undef;
+        my $ssl_cert_path = (defined($config->returnValue("cdr xml cert-path"))) ? $config->returnValue("cdr xml cert-path") : undef;
+        my $ssl_key_path = (defined($config->returnValue("cdr xml key-path"))) ? $config->returnValue("cdr xml key-path") : undef;
+        my $ssl_key_password = (defined($config->returnValue("cdr xml key-password"))) ? $config->returnValue("cdr xml key-password") : undef;
+        my $ssl_cacert_file = (defined($config->returnValue("cdr xml cacert-file"))) ? $config->returnValue("cdr xml cacert-file") : undef;
+        my $ssl_version = (defined($config->returnValue("cdr xml version"))) ? $config->returnValue("cdr xml version") : undef;
+        
+        my $fs_config = XMLin('<configuration name="xml_cdr.conf" description="XML CDR CURL logger"><settings /></configuration>', KeyAttr=>{});
+        my @a = ();
+        push @a, { name => 'url', value => $url } if (defined($url));
+        push @a, { name => 'cred', value => "$username:$password" } if (defined($username) && defined($password));
+        push @a, { name => 'auth-scheme', value => $auth_scheme } if (defined($auth_scheme));
+        push @a, { name => 'encode', value => $encode } if (defined($encode));
+        push @a, { name => 'retries', value => $retries } if (defined($retries));
+        push @a, { name => 'delay', value => $delay } if (defined($delay));
+        push @a, { name => 'log-http-and-disk', value => $log_http_and_disk } if (defined($log_http_and_disk));
+        if (defined($log_dir)) {
+            if (!-e $log_dir) {
+                system("mkdir -p $log_dir");
+                system("chmod 0750 $log_dir");
+                system("chown $uid:$gid $log_dir");
+            }
+            push @a, { name => 'log-dir', value => $log_dir };
+        }
+        if (defined($err_log_dir)) {
+            if (!-e $err_log_dir) {
+                system("mkdir -p $err_log_dir");
+                system("chmod 0750 $err_log_dir");
+                system("chown $uid:$gid $err_log_dir");
+            }
+            push @a, { name => 'err-log-dir', value => $err_log_dir };
+        }
+        push @a, { name => 'log-b-leg', value => $log_b_leg } if (defined($log_b_leg));
+        push @a, { name => 'prefix-a-leg', value => $prefix_a_leg } if (defined($prefix_a_leg));
+        push @a, { name => 'disable-100-continue', value => $disable_100_continue } if (defined($disable_100_continue));
+
+        push @a, { name => 'enable-cacert-check', value => $enable_cacert_check } if (defined($enable_cacert_check));
+        push @a, { name => 'ssl-cacert-file', value => $ssl_cacert_file } if (defined($ssl_cacert_file));
+        push @a, { name => 'ssl-cert-path', value => $ssl_cert_path } if (defined($ssl_cert_path));
+        push @a, { name => 'ssl-key-password', value => $ssl_key_password } if (defined($ssl_key_password));
+        push @a, { name => 'ssl-key-path', value => $ssl_key_path } if (defined($ssl_key_path));
+        push @a, { name => 'enable-ssl-verifyhost', value => $enable_ssl_verifyhost } if (defined($enable_ssl_verifyhost));
+        push @a, { name => 'ssl-version', value => $ssl_version } if (defined($ssl_version));
+
+        #my $ = (defined($config->returnValue("cdr xml "))) ? $config->returnValue("cdr xml ") : undef;
+        #push @a, { name => '', value => $ } if (defined($));
+        
+        $fs_config->{settings}->{param} =\@a;
+        my $fs_config_new = XML::Simple->new(rootname=>'configuration');
+        open my $fh, '>:encoding(UTF-8)', $fs_cdr or die "open($fs_cdr): $!";
+        $fs_config_new->XMLout($fs_config, OutputFile => $fh);
         #$cmd = $fs_config_new->XMLout($fs_config);
-        #$cmd = "Create cdr: $fs_\n";
+        $cmd = "Create cdr: $name\n";
         #$cmd = undef;
-        #return ($cmd, undef);
+        return ($cmd, undef);
     }
     else {
         return ("no cdr module $name\n", undef);

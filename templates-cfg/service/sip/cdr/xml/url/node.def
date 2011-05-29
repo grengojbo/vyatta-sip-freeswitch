@@ -1,0 +1,4 @@
+type: txt
+help: The url to post
+# need to prohibit '!' in url (sed delimiter)
+syntax:expression: pattern $VAR(@) "^[^!]+$" ; "URL must not be null and must not contain '!'"

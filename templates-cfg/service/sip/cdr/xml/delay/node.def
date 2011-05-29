@@ -1,0 +1,4 @@
+type: u32
+help: Delay between retries in seconds default is 5 seconds
+syntax:expression: $VAR(@) > 0 && $VAR(@) < 36001;
+                   "Port must be between 1 and 36000"
