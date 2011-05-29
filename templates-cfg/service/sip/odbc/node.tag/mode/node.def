@@ -1,0 +1,4 @@
+type: txt
+help: Database ODBC Driver
+syntax:expression: $VAR(@) in "mysql", "postgresql", "informix";
+                   "Must be \"mysql\", \"postgresql\", or \"informix\""

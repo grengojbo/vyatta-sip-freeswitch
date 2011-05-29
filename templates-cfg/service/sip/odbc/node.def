@@ -1,0 +1,12 @@
+tag:
+priority: 993
+type: txt
+help: ODBC connect name
+syntax:expression: pattern $VAR(@) "^[-_a-zA-Z0-9.]+$" ; "invalid name \"$VAR(@)\""
+create:expression: exec "sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --conf=odbc --action=create"
+end: if [ ${COMMIT_ACTION} = 'DELETE' ]; then
+        sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --conf=odbc --action=delete;
+    fi;
+    if [ ${COMMIT_ACTION} = 'ACTIVE' ]; then
+        sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --conf=odbc --action=update;
+    fi;

@@ -1,0 +1,5 @@
+type: u32
+default: 5060
+help: Port to bind to for database server
+syntax:expression: $VAR(@) > 0 && $VAR(@) < 60000;
+                   "Port must be between 1 and 60000"

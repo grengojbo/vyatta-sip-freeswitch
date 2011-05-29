@@ -1,0 +1,3 @@
+type: txt
+help:  Database password
+syntax:expression: pattern $VAR(@) "^[^!]*$" ; "Do not use '!' in url"
