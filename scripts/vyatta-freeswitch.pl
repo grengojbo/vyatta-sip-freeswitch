@@ -174,6 +174,10 @@ sub fs_conf {
             my($res, $err) = $config->confAcl();
             print $res if(defined($res));
         }
+        elsif ($name eq 'odbc') {
+            my($res, $err) = $config->confODBC();
+            print $res if(defined($res));
+        }
         elsif ($name eq 'lang') {
             $config->confLanguage();
             $config->confModules();

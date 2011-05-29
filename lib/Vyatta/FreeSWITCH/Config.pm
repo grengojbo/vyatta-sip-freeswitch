@@ -20,6 +20,7 @@ use lib "/opt/vyatta/share/perl5/";
 use Vyatta::Config;
 use Vyatta::TypeChecker;
 use NetAddr::IP;
+use Config::IniFiles;
 
 use XML::Simple;
 use Data::Dumper;
@@ -64,7 +65,9 @@ my %fields = (
   _cdr_pg       => undef,
   _cdr_json     => undef,
   _profile_name => undef,
-  _cdr         => [],
+  _cdr          => [],
+  _odbc         => [],
+  _odbc_list    => [],
   _acls         => [],
   _acl_list     => [],
   _codecs       => [],
@@ -260,6 +263,15 @@ sub setup {
   $self->{_cdr} = \@tmp_cdr;
   my @tmp_acls = $config->listNodes('acl');
   $self->{_acls} = \@tmp_acls;
+  my @tmp_odbc = $config->listNodes('odbc');
+  if (scalar(@tmp_odbc) > 0) {
+    my @tmp_odbc_node = ();
+    for my $sec (@tmp_odbc) {
+        my $odbc_mode = (defined($config->returnValue("odbc $sec mode"))) ? $config->returnValue("odbc $sec mode") : undef;
+        push(@tmp_odbc_node, $sec) if (defined($odbc_mode));
+    }
+    $self->{_odbc} = \@tmp_odbc_node;
+  }
   if (scalar(@{$self->{_acls}}) > 0) {
     $self->{_acl} = 1;
     my @tmp_acl_node = ();
@@ -276,38 +288,13 @@ sub setup {
     $self->{_acl_list} = \@tmp_acl_node;
   }
  
-  #$self->{_options} = $config->returnValue('openvpn-option');
-  #$self->{_secret_file} = $config->returnValue('shared-secret-key-file');
-  #$self->{_server_subnet} = $config->returnValue('server subnet');
-  #$self->{_server_def} = (defined($self->{_server_subnet})) ? 1 : undef;
   return 0;
 }
 
 sub get_command {
   my ($self) = @_;
   my $cmd = "/etc/init.d/freeswitch restart"; 
-  #if ( $self->{_disable} ) { return ('disable', undef); }
 
-  # status
-  #$cmd .= " --status $status_dir/$self->{_intf}.status $status_itvl";
- 
-  # interface
-  #my $type = 'tun';
-  #if ( $self->{_bridge} ) { $type = 'tap'; }
-  #else { $type = 'tun'; }
-  #$cmd .= " --dev-type $type --dev $self->{_intf}";
-
-  #my ($tcp_p, $tcp_a) = (0, 0);
-  #if (defined($self->{_proto})) {
-  #  if ($self->{_proto} eq 'tcp-passive') {
-  #    $tcp_p = 1;
-  #  } elsif ($self->{_proto} eq 'tcp-active') {
-  #    $tcp_a = 1;
-  #  }
-  #}
-
-  # mode
-  #my ($client, $server, $topo) = (0, 0, 'subnet');
   return (undef, 'Must specify "mode"') if (!defined($self->{_mode}));
   return (undef, 'Must specify "language"') if (scalar(@{$self->{_language}}) == 0);
   return (undef, 'Must specify "default-language"') if (!defined($self->{_default_language}));
@@ -921,7 +908,6 @@ sub confSwitch {
 sub confAcl {
     my ($self) = @_;
     my $cmd = undef;
-    print "exec confAcl\n";
     my $fs_config = XMLin('<configuration name="acl.conf" description="Network Lists"><network-lists /></configuration>', KeyAttr=>{});
     $fs_config->{'network-lists'}->{list} = \@{$self->{_acl_list}};
     my $fs_config_new = XML::Simple->new(rootname=>'configuration');
@@ -932,7 +918,96 @@ sub confAcl {
     $cmd = "exec confAcl\n";
     return ($cmd, undef);
 }
+sub confODBC {
+    my ($self) = @_;
+    my $cmd = undef;
+    my $fs_odbc = $fs_dir.'/.odbc.ini';
+    my $config = new Vyatta::Config;
+    $config->setLevel("$fsLevel");
 
+    my ($cfg);
+    my $sec = 'fs';
+    if (-e $fs_odbc) {
+        $cfg = Config::IniFiles->new(-file => $fs_odbc);
+    }
+    else {
+        $cfg= Config::IniFiles->new();
+        $cfg->SetFileName($fs_odbc);
+    }
+    if (scalar(@{$self->{_odbc}}) > 0) {
+        for my $sec (@{$self->{_odbc}}) {
+            if (!$cfg->SectionExists($sec)) {
+                $cfg->AddSection($sec);
+            }
+            my $odbc_mode = (defined($config->returnValue("odbc $sec mode"))) ? $config->returnValue("odbc $sec mode") : undef;
+            my $odbc_database = (defined($config->returnValue("odbc $sec database"))) ? $config->returnValue("odbc $sec database") : undef;
+            my $odbc_description = (defined($config->returnValue("odbc $sec description"))) ? $config->returnValue("odbc $sec description") : undef;
+            my $odbc_host = (defined($config->returnValue("odbc $sec host"))) ? $config->returnValue("odbc $sec host") : undef;
+            my $odbc_password = (defined($config->returnValue("odbc $sec password"))) ? $config->returnValue("odbc $sec password") : undef;
+            my $odbc_port = (defined($config->returnValue("odbc $sec port"))) ? $config->returnValue("odbc $sec port") : undef;
+            my $odbc_user = (defined($config->returnValue("odbc $sec user"))) ? $config->returnValue("odbc $sec user") : undef;
+            #my $odbc_ = (defined($config->returnValue("odbc $sec "))) ? $config->returnValue("odbc $sec ") : undef;
+            if (defined($odbc_mode) && $odbc_mode eq 'mysql') {
+                if ($cfg->exists($sec, 'DATABASE')) {
+                    $cfg->setval($sec, 'DATABASE', $odbc_database);
+                }
+                else {
+                    $cfg->newval($sec, 'DATABASE', $odbc_database);
+                }
+                if ($cfg->exists($sec, 'Description')) {
+                    $cfg->setval($sec, 'Description', $odbc_description);
+                }
+                else {
+                    $cfg->newval($sec, 'Description', $odbc_description);
+                }
+                if ($cfg->exists($sec, 'SERVER')) {
+                    $cfg->setval($sec, 'SERVER', $odbc_host);
+                }
+                else {
+                    $cfg->newval($sec, 'SERVER', $odbc_host);
+                }
+                if ($cfg->exists($sec, 'PASSWORD')) {
+                    $cfg->setval($sec, 'PASSWORD', $odbc_password);
+                }
+                else {
+                    $cfg->newval($sec, 'PASSWORD', $odbc_password);
+                }
+                if ($cfg->exists($sec, 'PORT')) {
+                    $cfg->setval($sec, 'PORT', $odbc_port);
+                }
+                else {
+                    $cfg->newval($sec, 'PORT', $odbc_port);
+                }
+                if ($cfg->exists($sec, 'USER')) {
+                    $cfg->setval($sec, 'USER', $odbc_user);
+                }
+                else {
+                    $cfg->newval($sec, 'USER', $odbc_user);
+                }
+                if ($cfg->exists($sec, 'OPTION')) {
+                    $cfg->setval($sec, 'OPTION', '67108864');
+                }
+                else {
+                    $cfg->newval($sec, 'OPTION', '67108864');
+                }
+                if ($cfg->exists($sec, 'Driver')) {
+                    $cfg->setval($sec, 'Driver', 'MySQL');
+                }
+                else {
+                    $cfg->newval($sec, 'Driver', 'MySQL');
+                }
+            }
+            else {
+                
+            }
+        }
+    }
+    #$cfg->AddSection("ODBC Data Sources");
+    #$cfg->WriteConfig();
+    $cfg->RewriteConfig();
+    $cmd = "exec confODBC\n";
+    return ($cmd, undef);
+}
 sub show_modules {
     print join(' ', @modules_unsuport), "\n";
 }
