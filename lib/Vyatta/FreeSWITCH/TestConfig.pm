@@ -79,4 +79,33 @@ sub confCdr {
     #return undef;
 }
 
+sub confAcl {
+    my ($self, $name, $param) = @_;
+    my $fs_config = XMLin($fs_acl, KeyAttr => {});
+    #print "$fs_acl\n";
+    #print Dumper($fs_config);
+    #    return $fs_config->{'network-lists'}->{list}->{$name}->{dafault};
+    #}
+    #else {
+        #foreach my $key (@{$fs_config->{'network-lists'}->{list}->{$name}->{node}}) {
+        foreach my $key (@{$fs_config->{'network-lists'}->{list}}) {
+            if ($key->{name} eq $name) {
+                if ($param eq 'default') {
+                    return $key->{default};
+                }
+                else {
+                    foreach my $k (@{$key->{node}}) {
+                        if ($k->{cidr} eq $param) {
+                            return $k->{'type'};
+                        }
+                    }
+                }
+    #        if ($key->{cidr} eq $param) {
+    #            return $key->{type};
+            } 
+        } 
+    #}
+    #return undef;
+}
+
 1;

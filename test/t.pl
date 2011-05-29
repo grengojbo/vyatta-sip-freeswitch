@@ -31,5 +31,7 @@ print "error cdr delay\n" if ($tc->confCdr('xml', 'delay') ne '10');
 print "error cdr err-log-dir\n" if ($tc->confCdr('xml', 'err-log-dir') ne '/opt/freeswitch/log/xml_cdr');
 print "error cdr log-b-leg\n" if ($tc->confCdr('xml', 'log-b-leg') ne 'false');
 print "error cdr prefix-a-leg\n" if ($tc->confCdr('xml', 'prefix-a-leg') ne 'true');
-#print "error cdr \n" if ($tc->confCdr('') ne '');
-
+print "error acl default\n" if ($tc->confAcl('mylan', 'default') ne 'deny');
+print "error acl 1\n" if ($tc->confAcl('mylan', '192.168.10.0/24') ne 'allow');
+print "error acl 2\n" if ($tc->confAcl('mylan', '192.168.10.20/32') ne 'deny');
+print "error acl 3\n" if ($tc->confAcl('mylan', '192.168.20.0/24') ne 'deny');

@@ -920,13 +920,17 @@ sub confSwitch {
 
 sub confAcl {
     my ($self) = @_;
+    my $cmd = undef;
     print "exec confAcl\n";
     my $fs_config = XMLin('<configuration name="acl.conf" description="Network Lists"><network-lists /></configuration>', KeyAttr=>{});
     $fs_config->{'network-lists'}->{list} = \@{$self->{_acl_list}};
     my $fs_config_new = XML::Simple->new(rootname=>'configuration');
-    open my $fh, '>:encoding(UTF-8)', $fs_switch or die "open($fs_switch): $!";
+    open my $fh, '>:encoding(UTF-8)', $fs_acl or die "open($fs_acl): $!";
     $fs_config_new->XMLout($fs_config, OutputFile=>$fh);
-    #print $fs_config_new->XMLout($fs_config);
+    #$cmd = $fs_config_new->XMLout($fs_config);
+    #$cmd = undef;
+    $cmd = "exec confAcl\n";
+    return ($cmd, undef);
 }
 
 sub show_modules {

@@ -160,7 +160,7 @@ sub fs_conf {
 
     #my $config = new Vyatta::Config;
     #$config->setLevel("service sip");
-    my ($cmd, $err) = $config->get_command() if ($action ne 'delete') ;
+    my ($cmd, $err) = $config->get_command() if ($action ne 'delete');
     
     #if (!defined($self->{_secret_file}) && !defined($self->{_tls_def}));
     #if (!defined($config->returnValue("domain-name"))) {
@@ -171,7 +171,8 @@ sub fs_conf {
             $config->confSwitch();
         }
         elsif ($name eq 'acl') {
-            $config->confAcl();
+            my($res, $err) = $config->confAcl();
+            print $res if(defined($res));
         }
         elsif ($name eq 'lang') {
             $config->confLanguage();

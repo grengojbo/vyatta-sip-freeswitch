@@ -1,9 +1,12 @@
 tag:
+priority: 993
 type: txt
 help: ACL stands for Access Control List and is a list of permissions associated with an object
 syntax:expression: pattern $VAR(@) "^[-_a-zA-Z0-9.]+$" ; "invalid ACL name \"$VAR(@)\""
+create:expression: exec "sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --conf=acl --action=create"
 end: if [ ${COMMIT_ACTION} = 'DELETE' ]; then
         sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --conf=acl --action=delete;
-    else
-        sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --conf=acl;
+    fi;
+    if [ ${COMMIT_ACTION} = 'ACTIVE' ]; then
+        sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --conf=acl --action=update;
     fi;

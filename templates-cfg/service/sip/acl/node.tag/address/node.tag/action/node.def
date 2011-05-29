@@ -1,3 +1,4 @@
 type: txt
+default: "deny"
 help: Is allowed to access the object
 syntax:expression: $VAR(@) in "allow", "deny"
