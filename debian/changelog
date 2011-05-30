@@ -1,3 +1,9 @@
+vyatta-sip-freeswitch (0.2) unstable; urgency=low
+
+  * This package was debianized
+
+ -- Oleg Dolya <oleg.dolya@gmail.com>  Mon, 30 May 2011 15:08:33 +0300
+
 vyatta-sip-freeswitch (0.1) unstable; urgency=low
 
   * Initial Release.
