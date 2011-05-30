@@ -17,6 +17,7 @@ my $fs_modules = $fs_conf_dir.'/autoload_configs/modules.conf.xml';
 my $fs_switch = $fs_conf_dir.'/autoload_configs/switch.conf.xml';
 my $fs_event_socket = $fs_conf_dir.'/autoload_configs/event_socket.conf.xml';
 my $fs_acl = $fs_conf_dir.'/autoload_configs/acl.conf.xml';
+my $fs_db = $fs_conf_dir.'/autoload_configs/db.conf.xml';
 my $fs_profile_dir = $fs_conf_dir.'/sip_profiles';
 my $fs_example_dir = '/opt/vyatta/etc/freeswitch';
 
@@ -56,7 +57,6 @@ sub confModules {
     my $fs_config = XMLin($fs_modules);
     #print Dumper($fs_config);
     foreach my $key (@{$fs_config->{modules}->{load}}) {
-        #print "$key->{module}=$mod_name\n";
         if ($key->{module} eq $mod_name) {
             return 1;
         } 
@@ -70,24 +70,20 @@ sub confCdr {
     my $fs_config = XMLin($fs_cdr);
     #print Dumper($fs_config);
     return $fs_config->{settings}->{param}->{$param}->{value};
-    #foreach my $key (@{$fs_config->{settings}->{param}}) {
-    #    #print "$key->{module}=$mod_name\n";
-    #    if ($key->{name} eq $param) {
-    #        return $key->{value};
-    #    } 
-    #}
-    #return undef;
+}
+sub confDB {
+    my ($self, $name, $param) = @_;
+    my $fs_config = XMLin($fs_db);
+    return $fs_config->{settings}->{param}->{value};
 }
 
 sub confAcl {
     my ($self, $name, $param) = @_;
     my $fs_config = XMLin($fs_acl, KeyAttr => {});
     #print "$fs_acl\n";
-    #print Dumper($fs_config);
     #    return $fs_config->{'network-lists'}->{list}->{$name}->{dafault};
     #}
     #else {
-        #foreach my $key (@{$fs_config->{'network-lists'}->{list}->{$name}->{node}}) {
         foreach my $key (@{$fs_config->{'network-lists'}->{list}}) {
             if ($key->{name} eq $name) {
                 if ($param eq 'default') {

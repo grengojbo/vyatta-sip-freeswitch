@@ -62,6 +62,9 @@ elsif ($name eq 'acl') {
     print "error acl 2\n" if ($tc->confAcl('mylan', '192.168.10.20/32') ne 'deny');
     print "error acl 3\n" if ($tc->confAcl('mylan', '192.168.20.0/24') ne 'deny');
 }
+elsif ($name eq 'db') {
+    print "error db default\n" if ($tc->confDB('testdb', 'testdb:test:test') ne 'testdb:test:test');
+}
 elsif ($name eq 'odbc') {
     my $fs_dir = '/opt/freeswitch';
     my $fs_odbc = $fs_dir.'/.odbc.ini';

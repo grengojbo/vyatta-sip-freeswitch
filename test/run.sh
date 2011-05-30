@@ -3,6 +3,7 @@
 /opt/vyatta/sbin/my_delete service sip cdr
 /opt/vyatta/sbin/my_delete service sip acl
 /opt/vyatta/sbin/my_delete service sip odbc
+/opt/vyatta/sbin/my_delete service sip db
 /opt/vyatta/sbin/my_commit
 # CDR
 /opt/vyatta/sbin/my_set service sip cdr csv
@@ -31,9 +32,13 @@ sudo ./test/t.pl --conf=acl
 /opt/vyatta/sbin/my_set service sip odbc testdb port 3306
 /opt/vyatta/sbin/my_set service sip odbc testdb user test
 /opt/vyatta/sbin/my_set service sip odbc testdb host localhost
-sudo ./test/t.pl --conf=odbc
-#/opt/vyatta/sbin/my_set 
 /opt/vyatta/sbin/my_commit
+sudo ./test/t.pl --conf=odbc
+/opt/vyatta/sbin/my_set service sip db default testdb
+/opt/vyatta/sbin/my_commit
+sudo ./test/t.pl --conf=db
+#/opt/vyatta/sbin/my_set 
+#/opt/vyatta/sbin/my_commit
 #/opt/vyatta/sbin/my_delete service sip cdr csv
 #/opt/vyatta/sbin/my_delete service sip cdr radius
 #/opt/vyatta/sbin/my_commit

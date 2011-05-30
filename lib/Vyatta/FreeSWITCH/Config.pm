@@ -34,6 +34,7 @@ my $fs_modules = $fs_conf_dir.'/autoload_configs/modules.conf.xml';
 my $fs_switch = $fs_conf_dir.'/autoload_configs/switch.conf.xml';
 my $fs_event_socket = $fs_conf_dir.'/autoload_configs/event_socket.conf.xml';
 my $fs_acl = $fs_conf_dir.'/autoload_configs/acl.conf.xml';
+my $fs_db = $fs_conf_dir.'/autoload_configs/db.conf.xml';
 my $fs_profile_dir = $fs_conf_dir.'/sip_profiles';
 my $fs_example_dir = '/opt/vyatta/etc/freeswitch';
 
@@ -65,6 +66,11 @@ my %fields = (
   _cdr_pg       => undef,
   _cdr_json     => undef,
   _profile_name => undef,
+  _odbc_name    => undef,
+  _odbc_dsn     => undef,
+  _odbc_user    => undef,
+  _odbc_pass    => undef,
+  _odbc_def    => undef,
   _cdr          => [],
   _odbc         => [],
   _odbc_list    => [],
@@ -214,7 +220,6 @@ sub setup {
   my $self = shift;
   my $config = new Vyatta::Config;
 
-  # set up ccd for this interface
   $config->setLevel("$fsLevel");
   my @nodes = $config->listNodes();
   if (scalar(@nodes) <= 0) {
@@ -271,6 +276,13 @@ sub setup {
         push(@tmp_odbc_node, $sec) if (defined($odbc_mode));
     }
     $self->{_odbc} = \@tmp_odbc_node;
+  }
+  $self->{_odbc_def} = (defined($config->returnValue("db default"))) ? $config->returnValue("db default") : undef;
+  if (defined($self->{_odbc_def})) {
+    $self->{_odbc_user} = (defined($config->returnValue("odbc $self->{_odbc_def} user"))) ? $config->returnValue("odbc $self->{_odbc_def} user") : undef;
+    $self->{_odbc_pass} = (defined($config->returnValue("odbc $self->{_odbc_def} password"))) ? $config->returnValue("odbc $self->{_odbc_def} password") : undef;
+    $self->{_odbc_name} = $self->{_odbc_def};
+    $self->{_odbc_dsn} = $self->{_odbc_name}.':'.$self->{_odbc_user}.':'.$self->{_odbc_pass};
   }
   if (scalar(@{$self->{_acls}}) > 0) {
     $self->{_acl} = 1;
@@ -918,6 +930,35 @@ sub confAcl {
     $cmd = "exec confAcl\n";
     return ($cmd, undef);
 }
+sub confDB {
+    my ($self, $name, $action) = @_;
+    my $cmd = undef;
+    my $config = new Vyatta::Config;
+    $config->setLevel("$fsLevel");
+    my $fs_config = XMLin('<configuration name="db.conf" description="LIMIT DB Configuration"><settings /></configuration>', KeyAttr=>{});
+    if ($action eq 'delete') {
+        #splice(@{$fs_config->{settings}->{param}}, 0, 1); 
+        $self->{_odbc_user} = undef
+        $self->{_odbc_pass} = undef;
+        $self->{_odbc_name} = undef;
+        $self->{_odbc_dsn} = undef;
+        $self->{_odbc_def} = undef;
+    }
+    else {
+        $self->{_odbc_user} = (defined($config->returnValue("odbc $name user"))) ? $config->returnValue("odbc $name user") : undef;
+        $self->{_odbc_pass} = (defined($config->returnValue("odbc $name password"))) ? $config->returnValue("odbc $name password") : undef;
+        $self->{_odbc_name} = $name;
+        $self->{_odbc_dsn} = $self->{_odbc_name}.':'.$self->{_odbc_user}.':'.$self->{_odbc_pass};
+        push @{ $fs_config->{settings}->{param} }, { name => 'odbc-dsn', value => $self->{_odbc_dsn} };
+    }
+    my $fs_config_new = XML::Simple->new(rootname=>'configuration');
+    open my $fh, '>:encoding(UTF-8)', $fs_db or die "open($fs_db): $!";
+    $fs_config_new->XMLout($fs_config, OutputFile=>$fh);
+    #$cmd = $fs_config_new->XMLout($fs_config);
+    #$cmd = undef;
+    $cmd = "exec confDB\n";
+    return ($cmd, undef);
+}
 sub confODBC {
     my ($self) = @_;
     my $cmd = undef;
@@ -1020,6 +1061,15 @@ sub show_codecs {
     print join(' ', @codecs_all), "\n";
 }
 
+sub showODBC {
+    my ($self) = @_;
+    if (scalar(@{$self->{_odbc}}) > 0) {
+        return (join(' ', @{$self->{_odbc}}), undef);
+    }
+    else {
+        return (undef, 'Must specify "odbc"')
+    }
+}
 sub showCodec {
     my ($self) = @_;
     if (scalar(@{$self->{_codecs}}) > 0) {

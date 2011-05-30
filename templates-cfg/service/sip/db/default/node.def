@@ -1,0 +1,9 @@
+priority: 992
+type: txt
+help: If using ODBC, this backend can also be shared across a cluster of FreeSWITCH instances
+allowed: /opt/vyatta/sbin/vyatta-freeswitch.pl --show=odbc
+create:expression: exec "sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --db=$VAR(@) --action=create"
+update:expression: exec "sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --db=$VAR(@) --action=update"
+end: if [ ${COMMIT_ACTION} = 'DELETE' ]; then
+        sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --db=default --action=delete;
+    fi;

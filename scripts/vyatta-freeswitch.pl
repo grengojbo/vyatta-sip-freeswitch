@@ -44,7 +44,7 @@ use warnings;
 
 my $fs_conf_dir = '/opt/freeswitch/conf';
 
-my ($conf_name, $show_names, $user_names, $reload_names, $profile_names, $gateway_names, $action, $action_update, $action_delete, $action_create, $action_name, $action_val, $cdr_name);
+my ($conf_name, $show_names, $user_names, $reload_names, $profile_names, $gateway_names, $action, $action_update, $action_delete, $action_create, $action_name, $action_val, $cdr_name, $db_name);
 
 sub usage {
     print <<EOF;
@@ -54,6 +54,7 @@ Usage: $0 --conf=<acl|cli|switch|lang|modules>
        $0 --profile=<name_profile> [--gateway=<name_gateway>] [--action=<create|update|delete>] [--update|--delete|-create=<var_name>]
        $0 --cdr=<name_cdr> [--action=<create|update|delete>] [--update|--delete|-create=<var_name>]
        $0 --user=<name_user>
+       $0 --db=<odbc_name> [--action=<create|update|delete>] 
 EOF
     exit 1;
 }
@@ -65,6 +66,7 @@ GetOptions("conf=s"  => \$conf_name,
        "gateway=s"	       => \$gateway_names,
        "user=s"	       => \$user_names,
        "cdr=s"	       => \$cdr_name,
+       "db=s"	       => \$db_name,
        "action=s"	       => \$action,
        "update=s"	       => \$action_update,
        "create=s"	       => \$action_create,
@@ -91,12 +93,28 @@ fs_conf($conf_name, $action) if ($conf_name);
 fs_show($show_names) if ($show_names);
 fs_profile($profile_names, $action) if ($profile_names && !$gateway_names);
 fs_cdr($cdr_name, $action) if ($cdr_name);
+fs_db($db_name, $action) if ($db_name);
 fs_gateway($profile_names, $gateway_names, $action, $action_name, $action_val) if ($profile_names && $gateway_names);
 exit 0;
 
+sub fs_db {
+    my ($name, $action) = @_;
+    my $config = new Vyatta::FreeSWITCH::Config;
+    $config->setup();
+    my ($cmd, $err);
+    ($cmd, $err) = $config->get_command() if ($action ne 'delete');
+    if (defined($err)) {
+        print STDERR "FreeSWITCH configuration error: $err.\n";
+    exit 1;
+    }
+    ($cmd, $err) = $config->confDB($name, $action);
+    #$config->confModules();
+    if (defined($cmd)) {
+        print $cmd;
+    }
+}    
 sub fs_profile {
     my ($name, $action) = @_;
-    #my $name = shift;
     my $config = new Vyatta::FreeSWITCH::Config;
     $config->setup();
     my ($cmd, $err) = $config->get_command() if ($action ne 'delete') ;
@@ -215,6 +233,18 @@ sub fs_show {
         my $config = new Vyatta::FreeSWITCH::Config;
         $config->setup();
         my ($cmd, $err) = $config->showContext();
+        if (defined($err)) {
+            print STDERR "\nFreeSWITCH configuration error: $err.\n";
+            exit 1;
+        }
+        else {
+            print "$cmd\n";
+        }
+    }
+    elsif ($name eq 'odbc') {
+        my $config = new Vyatta::FreeSWITCH::Config;
+        $config->setup();
+        my ($cmd, $err) = $config->showODBC();
         if (defined($err)) {
             print STDERR "\nFreeSWITCH configuration error: $err.\n";
             exit 1;

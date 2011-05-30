@@ -1,0 +1,6 @@
+priority: 993
+help: The database can either be in sqlite or ODBC
+end: if [ ${COMMIT_ACTION} = 'DELETE' ]; then
+        echo "Delete db";
+        sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --db=default --action=delete;
+    fi;
