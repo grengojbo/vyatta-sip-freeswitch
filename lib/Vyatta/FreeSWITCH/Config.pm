@@ -311,7 +311,8 @@ sub get_command {
   return (undef, 'Must specify "language"') if (scalar(@{$self->{_language}}) == 0);
   return (undef, 'Must specify "default-language"') if (!defined($self->{_default_language}));
   return (undef, 'Must specify "codecs"') if (scalar(@{$self->{_codecs}}) == 0);
-  return (undef, 'Must specify "profile"') if (scalar(@{$self->{_profile}}) == 0);
+  #return (undef, 'Must specify "domain-name"') if (!defined($self->{_domain_name}));
+  #return (undef, 'Must specify "profile"') if (scalar(@{$self->{_profile}}) == 0);
   if (defined($self->{_cli})) {
     return (undef, 'Must specify "set service sip cli password"') if (!defined($self->{_cli_password}));
     return (undef, 'Must specify "set service sip cli listen-port"') if (!defined($self->{_cli_port}));
@@ -550,8 +551,8 @@ sub confGateway {
         open my $fh, '>:encoding(UTF-8)', $fs_gateway or die "open($fs_gateway): $!";
         $fs_config_new->XMLout($fs_config, OutputFile => $fh);
         #$cmd = $fs_config_new->XMLout($fs_config);
-        #$cmd = "Create Gateway: $fs_gateway\n";
-        $cmd = undef;
+        $cmd = "Create Gateway: $fs_gateway";
+        #$cmd = undef;
         return ($cmd, undef);
     }
 }
@@ -745,8 +746,8 @@ sub confProfile {
         open my $fh, '>:encoding(UTF-8)', $fs_profile_file or die "open($fs_profile_file): $!";
         $fs_config_new->XMLout($fs_config, OutputFile => $fh);
         #$cmd = $fs_config_new->XMLout($fs_config);
-        #$cmd = "Create Gateway: $fs_gateway\n";
-        $cmd = undef;
+        $cmd = "Create Profile: $fs_profile_file";
+        #$cmd = undef;
         return ($cmd, undef);
     }
     
@@ -1069,6 +1070,13 @@ sub showODBC {
     else {
         return (undef, 'Must specify "odbc"')
     }
+}
+sub showDomain {
+    my ($self) = @_;
+    my $config = new Vyatta::Config;
+    #$config->setLevel("$fsLevel");
+    my $domain_name = (defined($config->returnValue("system domain-name"))) ? $config->returnValue("system domain-name") : 'localhost';
+    return $domain_name;
 }
 sub showCodec {
     my ($self) = @_;

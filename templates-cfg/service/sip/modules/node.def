@@ -1,4 +1,5 @@
 multi:
+priority: 993
 type: txt
 help: Modules
 allowed: /opt/vyatta/sbin/vyatta-freeswitch.pl --show=modules

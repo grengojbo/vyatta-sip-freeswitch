@@ -2,5 +2,4 @@ type: txt
 default: "no"
 help: Set FreeSWITCH dump-cores
 syntax:expression: $VAR(@) in "yes", "no"
-create:sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --conf=switch
-update:sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --conf=switch
+#create:sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --conf=switch

@@ -2,8 +2,6 @@ multi:
 type: txt
 help: Codec Negotiation in FreeSWITCH
 allowed: /opt/vyatta/sbin/vyatta-freeswitch.pl --show=codecs
-#create:sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --conf=modules
-#update:sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --conf=modules
 comp_help: Possible completions:
     g723       G.723.1 codec 
     g729       G.729 codec

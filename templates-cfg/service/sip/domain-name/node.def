@@ -1,11 +1,12 @@
-priority: 992
 type: txt
 help: SIP domain name
 
 # Allow letter-number-hyphen in label (but can not start or end with hyphen)
 syntax:expression: pattern $VAR(@) "^[a-zA-Z0-9](([-a-zA-Z0-9]*[a-zA-Z0-9])?\.)*[a-zA-Z]+$" ; "invalid domain name $VAR(@)"
 
-create:sudo /opt/vyatta/sbin/vyatta-freeswitch-vars domain $VAR(@);
-    sudo /opt/vyatta/sbin/vyatta-freeswitch-vars domain_name $VAR(@)
+allowed:sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --show=domain
+create:expression: exec "sudo /opt/vyatta/sbin/vyatta-freeswitch-vars domain $VAR(@) && sudo /opt/vyatta/sbin/vyatta-freeswitch-vars domain_name $VAR(@)"
 update:sudo /opt/vyatta/sbin/vyatta-freeswitch-vars domain $VAR(@);
     sudo /opt/vyatta/sbin/vyatta-freeswitch-vars domain_name $VAR(@)
+delete:sudo /opt/vyatta/sbin/vyatta-freeswitch-vars domain localhost;
+    sudo /opt/vyatta/sbin/vyatta-freeswitch-vars domain_name localhost

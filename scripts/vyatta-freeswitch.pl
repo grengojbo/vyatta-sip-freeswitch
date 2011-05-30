@@ -241,6 +241,18 @@ sub fs_show {
             print "$cmd\n";
         }
     }
+    elsif ($name eq 'domain') {
+        my $config = new Vyatta::FreeSWITCH::Config;
+        $config->setup();
+        my ($cmd, $err) = $config->showDomain();
+        if (defined($err)) {
+            print STDERR "\nFreeSWITCH configuration error: $err.\n";
+            exit 1;
+        }
+        else {
+            print "$cmd\n";
+        }
+    }
     elsif ($name eq 'odbc') {
         my $config = new Vyatta::FreeSWITCH::Config;
         $config->setup();

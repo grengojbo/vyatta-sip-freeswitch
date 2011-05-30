@@ -3,5 +3,4 @@ default: 30
 help: Most channels to create per second
 syntax:expression: $VAR(@) > 0 && $VAR(@) < 65536;
                    "Port must be between 1 and 65535"
-create:sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --conf=switch
-update:sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --conf=switch
+#create:sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --conf=switch
