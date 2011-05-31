@@ -2,8 +2,8 @@ multi:
 type: txt
 help: FreeSWITCH languages files
 allowed: /opt/vyatta/sbin/vyatta-freeswitch.pl --show=lang
-#commit:expression: exec \
-#    "sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --conf=lang"
+create:expression: exec "sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --conf=lang --action=create"
+update:expression: exec "sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --conf=lang --action=update"
 comp_help: Possible completions:
   en    English
   ru    Russian

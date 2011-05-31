@@ -2,4 +2,4 @@ type: txt
 default: "true"
 help: Enable ZRTP globally you can override this on a per channel basis
 syntax:expression: $VAR(@) in "true", "false"
-#create:sudo /opt/vyatta/sbin/vyatta-freeswitch-vars zrtp_secure_media $VAR(@)
+create:expression: exec "sudo /opt/vyatta/sbin/vyatta-freeswitch-vars zrtp_secure_media $VAR(@)"

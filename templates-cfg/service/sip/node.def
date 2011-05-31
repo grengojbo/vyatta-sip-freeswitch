@@ -12,8 +12,15 @@ end: if [ ${COMMIT_ACTION} = 'DELETE' ]; then
     fi;
     if [ ${COMMIT_ACTION} = 'ACTIVE' ]; then
         echo "reload FreeSWITCH";
-        #sudo /usr/sbin/invoke-rc.d freeswitch reload;
+        sudo /opt/vyatta/sbin/vyatta-freeswitch-vars zrtp_secure_media $VAR(./zrtp-secure-media/@);
+        sudo /opt/vyatta/sbin/vyatta-freeswitch-vars console_loglevel $VAR(./loglevel/@);
+        sudo /opt/vyatta/sbin/vyatta-freeswitch-vars sound_prefix $VAR(./default-language/@);
+        sudo /opt/vyatta/sbin/vyatta-freeswitch-vars default_country $VAR(./country/@);
+        sudo /opt/vyatta/sbin/vyatta-freeswitch-vars default_areacode $VAR(./areacode/@);
+        sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --conf=switch --action=update;
+        sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --conf=modules --action=update;
         #sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --profile=$VAR(@) --action=update;
+        #sudo /usr/sbin/invoke-rc.d freeswitch reload;
     fi;
     #else
     #    #echo "Action ${COMMIT_ACTION}";

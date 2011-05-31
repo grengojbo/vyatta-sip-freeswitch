@@ -4,6 +4,7 @@ share_perl5dir	 = $(datarootdir)/perl5/Vyatta/FreeSWITCH
 bin_sudo_usersdir = $(bindir)/sudo-users
 curverdir = $(sysconfdir)/freeswitch
 
+bin_SCRIPTS = scripts/vyatta-show-interfaces2.pl
 sbin_SCRIPTS = scripts/vyatta-freeswitch.pl
 sbin_SCRIPTS += scripts/vyatta-freeswitch-vars
 

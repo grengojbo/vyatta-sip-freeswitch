@@ -18,9 +18,11 @@ set_base() {
 /opt/vyatta/sbin/my_set service sip codecs ilbc
 /opt/vyatta/sbin/my_set service sip codecs speex
 /opt/vyatta/sbin/my_set service sip codecs pcma
-#/opt/vyatta/sbin/my_set service sip domain-name example.com
+/opt/vyatta/sbin/my_set service sip domain-name example.com
+}
 # modules
-#/opt/vyatta/sbin/my_set service sip modules conference
+set_modules() {
+/opt/vyatta/sbin/my_set service sip modules conference
 }
 # Profile
 set_profile() {
@@ -84,6 +86,9 @@ case "$1" in
     db)
         set_db
         ;;
+    modules)
+        set_modules
+        ;;
     base)
         set_base
         ;;
@@ -111,7 +116,7 @@ case "$1" in
         run_delete
         ;;
     *)
-        echo $"Usage sudo make install && sudo $0 {set-all|test|delete|base|db|cdr|acl|odbc|profile}"
+        echo $"Usage sudo make install && $0 {set-all|test|delete|base|db|cdr|acl|odbc|profile|modules}"
         exit 1
 esac
 

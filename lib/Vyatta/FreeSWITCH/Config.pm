@@ -311,7 +311,7 @@ sub get_command {
   return (undef, 'Must specify "language"') if (scalar(@{$self->{_language}}) == 0);
   return (undef, 'Must specify "default-language"') if (!defined($self->{_default_language}));
   return (undef, 'Must specify "codecs"') if (scalar(@{$self->{_codecs}}) == 0);
-  #return (undef, 'Must specify "domain-name"') if (!defined($self->{_domain_name}));
+  return (undef, 'Must specify "domain-name"') if (!defined($self->{_domain_name}));
   #return (undef, 'Must specify "profile"') if (scalar(@{$self->{_profile}}) == 0);
   if (defined($self->{_cli})) {
     return (undef, 'Must specify "set service sip cli password"') if (!defined($self->{_cli_password}));

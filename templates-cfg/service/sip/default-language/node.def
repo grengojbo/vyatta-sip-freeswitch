@@ -1,7 +1,7 @@
 type: txt
 help: Set FreeSWITCH default language to IVR
 allowed: /opt/vyatta/sbin/vyatta-freeswitch.pl --show=allowlang
-#create:sudo /opt/vyatta/sbin/vyatta-freeswitch-vars sound_prefix $VAR(@)
+create:expression: exec "sudo /opt/vyatta/sbin/vyatta-freeswitch-vars sound_prefix $VAR(@)"
 comp_help: Possible completions:
   en    English
   ru    Russian

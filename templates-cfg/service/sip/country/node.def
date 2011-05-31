@@ -1,3 +1,4 @@
 type: txt
 default: "US"
 help: Country ISO default US
+create:expression: exec "sudo /opt/vyatta/sbin/vyatta-freeswitch-vars default_country $VAR(@)"

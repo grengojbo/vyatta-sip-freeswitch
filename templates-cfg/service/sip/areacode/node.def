@@ -2,3 +2,4 @@ type: u32
 default: 918
 help: Country areacode example from US 918
 syntax:expression: $VAR(@) > 0 && $VAR(@) < 65536
+create:expression: exec "sudo /opt/vyatta/sbin/vyatta-freeswitch-vars default_areacode $VAR(@)"
