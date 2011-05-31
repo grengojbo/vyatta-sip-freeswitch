@@ -1,16 +1,32 @@
-Source: vyatta-openvpn
+Source: vyatta-sip-freeswitch
 Section: contrib/net
 Priority: extra
-Maintainer: An-Cheng Huang <ancheng@vyatta.com>
+Maintainer: Oleg Dolya <oleg.dolya@gmail.com>
 Build-Depends: debhelper (>= 5), autotools-dev
 Standards-Version: 3.7.2
 
-Package: vyatta-openvpn
+Package: vyatta-sip-freeswitch
 Architecture: all
 Depends: perl,
  vyatta-cfg,
  vyatta-op,
  vyatta-bash | bash (>= 3.1),
- openvpn
-Description: Vyatta OpenVPN configuration/operational commands
- Vyatta configuration/operational templates and scripts for OpenVPN
+ freeswitch,
+ freeswitch-codec-passthru-amr,
+ freeswitch-codec-passthru-g729,
+ freeswitch-codec-passthru-g7231,
+ freeswitch-codec-passthru-amrwb,
+ freeswitch-lang-en,
+ freeswitch-lang-ru,
+ freeswitch-lua,
+ freeswitch-perl,
+ freeswitch-python, 
+ freeswitch-sounds-en-us-callie-8000,
+ freeswitch-sounds-music-8000,
+ freeswitch-sounds-music-16000,
+ freeswitch-sounds-music-32000,
+ freeswitch-sounds-ru-ru-elena-8000,
+ libxml-simple-perl,
+ libconfig-inifiles-perl
+Description: Vyatta FreeSWITCH configuration/operational commands
+ Vyatta configuration/operational templates and scripts for FreeSWITCH

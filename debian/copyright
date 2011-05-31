@@ -1,15 +1,16 @@
-This package was debianized by An-Cheng Huang <ancheng@vyatta.com> on
-Thu, 10 Jul 2008 18:49:13 -0700.
+This work was packaged for Debian by:
 
-It's original content from the GIT repository <http://vyatt.com/git/vyatta-openvpn>
+    Oleg Dolya <oleg.dolya@gmail.com> on Thu, 12 May 2011 02:36:28 +0300
+
+It's original content from the GIT repository <https://github.com/grengojbo/vyatta-sip-freeswitch>
 
 Upstream Author: 
 
-    <eng@vyatta.com>
+    <oleg.dolya@gmail.com>
 
 Copyright: 
 
-    Copyright (C) 2007 Vyatta, Inc.
+    Copyright (C) Oleg Dolya.
     All Rights Reserved.
 
 License:
@@ -32,5 +33,5 @@ You can also obtain it by writing to the Free Software Foundation,
 Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
 MA 02110-1301, USA.
 
-The Debian packaging is (C) 2007, An-Cheng Huang <ancheng@vyatta.com> and
+The Debian packaging is (C) 2011, Oleg Dolya <oleg.dolya@gmail.com> and
 is licensed under the GPL, see above.
