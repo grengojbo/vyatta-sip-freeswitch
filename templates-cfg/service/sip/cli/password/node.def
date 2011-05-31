@@ -1,2 +1,3 @@
 type: txt
 help: Plaintext password
+syntax:expression: pattern $VAR(@) "^[^!]*$" ; "Do not use '!' in url"

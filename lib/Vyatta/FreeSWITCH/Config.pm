@@ -56,8 +56,8 @@ my %fields = (
   _cli_port     => undef,
   _cli_address  => undef,
   _cli_nat      => undef,
+  _cli_acl      => undef,
   _cli_password => undef,
-  #_cli_acl      => undef,
   _acl          => undef,
   _cdr_csv      => undef,
   _cdr_sqlite   => undef,
@@ -240,7 +240,7 @@ sub setup {
   $self->{_cli_port} = $config->returnValue('cli listen-port');
   $self->{_cli_nat} = $config->returnValue('cli nat');
   $self->{_cli_password} = $config->returnValue('cli password');
-  #$self->{_cli_acl} = $config->returnValue('cli acl');
+  $self->{_cli_acl} = $config->returnValue('cli acl');
   $self->{_cli} = (defined($self->{_cli_password})
                        || defined($self->{_cli_address})
                        || defined($self->{_cli_port})) ? 1 : undef;
@@ -868,7 +868,10 @@ sub confCdr {
 
 sub confCli {
     my ($self) = @_;
+    my $cmd = undef;
     my $fs_config = XMLin($fs_event_socket, KeyAttr=>{});
+    my $apply_inbound_acl_cli = undef;
+    my $i = 0;
     foreach my $fs (@{$fs_config->{settings}->{param}}) {
         if ($fs->{name} eq 'nat-map' && defined($self->{_cli_nat})) {
             $fs->{value} = $self->{_cli_nat};
@@ -882,11 +885,21 @@ sub confCli {
         elsif ($fs->{name} eq 'password' && defined($self->{_cli_password})) {
             $fs->{value} = $self->{_cli_password};
         }
+        elsif ($fs->{name} eq 'apply-inbound-acl') {
+            $fs->{value} = $self->{_cli_acl};
+            $apply_inbound_acl_cli = $i;
+        }
+        $i++;
     }
+    push @{ $fs_config->{settings}->{param} }, { name => 'apply-inbound-acl', value => $self->{_cli_acl}} if (defined($self->{_cli_acl}) && !defined($apply_inbound_acl_cli));
+    splice(@{$fs_config->{settings}->{param}}, $apply_inbound_acl_cli, 1) if (!defined($self->{_cli_acl}) && defined($apply_inbound_acl_cli));
     my $fs_config_new = XML::Simple->new(rootname=>'configuration');
     open my $fh, '>:encoding(UTF-8)', $fs_event_socket or die "open($fs_event_socket): $!";
     $fs_config_new->XMLout($fs_config, OutputFile => $fh);
-    print "exec confCli\n";
+    #$cmd = $fs_config_new->XMLout($fs_config);
+    $cmd = "Create cli : $fs_event_socket\n";
+    #$cmd = undef;
+    return ($cmd, undef);
 }
 sub confSwitch {
     my ($self) = @_;

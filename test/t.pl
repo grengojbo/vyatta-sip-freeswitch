@@ -20,7 +20,7 @@ my @modules_cdr = ('xml_cdr', 'cdr_csv', 'radius_cdr');
 my ($profile_name, $user_name, $conf_name);
 sub usage {
     print <<EOF;
-Usage: $0 --conf=odbc
+Usage: $0 --conf=<conf_name>
        $0 --profile=<name_profile> [--gateway=<name_gateway>] [--action=<create|update|delete>] [--update|--delete|-create=<var_name>]
        $0 --user=<name_user>
 EOF
@@ -64,6 +64,13 @@ elsif ($name eq 'acl') {
 }
 elsif ($name eq 'db') {
     print "error db default\n" if ($tc->confDB('testdb', 'testdb:test:test') ne 'testdb:test:test');
+}
+elsif ($name eq 'cli') {
+    print "error cli nat-map\n" if ($tc->confCli('nat-map') ne 'false');
+    print "error cli listen-ip\n" if ($tc->confCli('listen-ip') ne '127.0.0.1');
+    print "error cli listen-port\n" if ($tc->confCli('listen-port') ne '5021');
+    print "error cli password\n" if ($tc->confCli('password') ne '123');
+    print "error cli acl\n" if ($tc->confCli('acl') ne 'lans');
 }
 elsif ($name eq 'odbc') {
     my $fs_dir = '/opt/freeswitch';

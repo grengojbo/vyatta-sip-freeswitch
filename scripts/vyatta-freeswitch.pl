@@ -185,23 +185,22 @@ sub fs_conf {
     #    return (undef, 'Must specify "domain-name"');
     #}
     if (defined($cmd)) {
+        $cmd = undef;
         if ($name eq 'switch') {
             $config->confSwitch();
         }
         elsif ($name eq 'acl') {
-            my($res, $err) = $config->confAcl();
-            print $res if(defined($res));
+            ($cmd, $err) = $config->confAcl();
         }
         elsif ($name eq 'odbc') {
-            my($res, $err) = $config->confODBC();
-            print $res if(defined($res));
+            ($cmd, $err) = $config->confODBC();
         }
         elsif ($name eq 'lang') {
             $config->confLanguage();
             $config->confModules();
         }
         elsif ($name eq 'cli') {
-            $config->confCli();
+            ($cmd, $err) = $config->confCli();
             $config->confModules();
         }
         elsif ($name eq 'cdr') {
@@ -216,6 +215,9 @@ sub fs_conf {
     if (defined($err)) {
         print STDERR "FreeSWITCH configuration error: $err.\n";
     exit 1;
+    }
+    elsif (defined($cmd)) {
+        print $cmd;
     }
 }
 sub fs_show {

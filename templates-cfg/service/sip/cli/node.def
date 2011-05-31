@@ -1,4 +1,9 @@
+priority: 993
 help: TCP based interface to control FreeSWITCH
-commit:expression: exec \
-    "sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --conf=cli"
-delete:sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --conf=modules
+create:expression: exec "sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --conf=cli --action=create"
+end: if [ ${COMMIT_ACTION} = 'DELETE' ]; then
+        sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --conf=cli --action=delete;
+    fi;
+    if [ ${COMMIT_ACTION} = 'ACTIVE' ]; then
+        sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --conf=cli --action=update;
+    fi;

@@ -28,9 +28,9 @@ set_modules() {
 set_profile() {
 /opt/vyatta/sbin/my_set service sip profile internal mode internal
 /opt/vyatta/sbin/my_set service sip profile internal address 192.168.67.67
-#/opt/vyatta/sbin/my_set 
-#/opt/vyatta/sbin/my_set 
-#/opt/vyatta/sbin/my_set 
+#/opt/vyatta/sbin/my_set service sip profile internal codec inbound pcma
+#/opt/vyatta/sbin/my_set service sip profile external mode external
+#/opt/vyatta/sbin/my_set service sip profile external codec inbound pcma
 #/opt/vyatta/sbin/my_set 
 }
 # CDR
@@ -53,6 +53,13 @@ set_acl() {
 /opt/vyatta/sbin/my_set service sip acl mylan address 192.168.10.20/32 action deny
 /opt/vyatta/sbin/my_set service sip acl mylan address 192.168.20.0/24
 }
+set_cli() {
+/opt/vyatta/sbin/my_set service sip cli listen-address 127.0.0.1
+/opt/vyatta/sbin/my_set service sip cli listen-port 5021
+/opt/vyatta/sbin/my_set service sip cli password 123
+#/opt/vyatta/sbin/my_set service sip cli apply-inbound-acl lans
+#/opt/vyatta/sbin/my_set service sip cli acl lans
+}
 # ODBC
 set_odbc() {
 /opt/vyatta/sbin/my_set service sip odbc testdb mode mysql
@@ -73,6 +80,7 @@ sudo ./test/t.pl --conf=acl
 sudo ./test/t.pl --conf=cdr
 sudo ./test/t.pl --conf=odbc
 sudo ./test/t.pl --conf=db
+sudo ./test/t.pl --conf=cli
 }
 #/opt/vyatta/sbin/my_set 
 #/opt/vyatta/sbin/my_commit
@@ -82,6 +90,9 @@ sudo ./test/t.pl --conf=db
 case "$1" in
     test)
         test_all
+        ;;
+    cli)
+        set_:cli
         ;;
     db)
         set_db

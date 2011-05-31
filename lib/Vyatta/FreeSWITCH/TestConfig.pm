@@ -77,6 +77,12 @@ sub confDB {
     return $fs_config->{settings}->{param}->{value};
 }
 
+sub confCli {
+    my ($self, $param) = @_;
+    my $fs_config = XMLin($fs_event_socket);
+    return $fs_config->{settings}->{param}->{$param}->{value};
+}
+
 sub confAcl {
     my ($self, $name, $param) = @_;
     my $fs_config = XMLin($fs_acl, KeyAttr => {});
