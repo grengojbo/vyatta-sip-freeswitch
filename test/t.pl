@@ -65,6 +65,17 @@ elsif ($name eq 'acl') {
 elsif ($name eq 'db') {
     print "error db default\n" if ($tc->confDB('testdb', 'testdb:test:test') ne 'testdb:test:test');
 }
+elsif ($name eq 'gateway') {
+    print "error gateway name\n" if ($tc->confGateway('external', 'voip-provider', '', 'name') ne 'voip-provider');
+    print "error gateway realm\n" if ($tc->confGateway('external', 'voip-provider', 'realm', 'param') ne 'sip.089.com.ua');
+    print "error gateway username\n" if ($tc->confGateway('external', 'voip-provider', 'username', 'param') ne 'pass');
+    print "error gateway password\n" if ($tc->confGateway('external', 'voip-provider', 'password', 'param') ne 'pass');
+    print "error gateway from-domain\n" if ($tc->confGateway('external', 'voip-provider', 'from-domain', 'param') ne '192.168.123.36');
+    print "error gateway register\n" if ($tc->confGateway('external', 'voip-provider', 'register', 'param') ne 'false');
+    print "error gateway register-transport\n" if ($tc->confGateway('external', 'voip-provider', 'register-transport', 'param') ne 'udp');
+    print "error gateway retry-seconds\n" if ($tc->confGateway('external', 'voip-provider', 'retry-seconds', 'param') ne '90');
+    print "error gateway caller-id-in-from\n" if ($tc->confGateway('external', 'voip-provider', 'caller-id-in-from', 'param') ne 'true');
+}
 elsif ($name eq 'cli') {
     print "error cli nat-map\n" if ($tc->confCli('nat-map') ne 'false');
     print "error cli listen-ip\n" if ($tc->confCli('listen-ip') ne '127.0.0.1');

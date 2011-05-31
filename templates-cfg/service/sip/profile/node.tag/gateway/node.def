@@ -7,7 +7,7 @@ create:expression: exec "sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --profile=$V
 end: if [ ${COMMIT_ACTION} = 'DELETE' ]; then
         sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --profile=$VAR(../@) --gateway=$VAR(@) --action=delete --delete=gateway;
     fi;
-    #if [ ${COMMIT_ACTION} = 'ACTIVE' ]; then
-    #    # TODO refactorin
-    #    sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --profile=$VAR(../@) --gateway=$VAR(@) --action=update;
-    #fi;
+    if [ ${COMMIT_ACTION} = 'ACTIVE' ]; then
+        # TODO refactorin
+        sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --profile=$VAR(../@) --gateway=$VAR(@) --action=update;
+    fi;

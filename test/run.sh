@@ -19,6 +19,7 @@ set_base() {
 /opt/vyatta/sbin/my_set service sip codecs speex
 /opt/vyatta/sbin/my_set service sip codecs pcma
 /opt/vyatta/sbin/my_set service sip domain-name example.com
+/opt/vyatta/sbin/my_set service sip dialplan context public
 }
 # modules
 set_modules() {
@@ -28,7 +29,7 @@ set_modules() {
 set_profile() {
 /opt/vyatta/sbin/my_set service sip profile internal mode internal
 /opt/vyatta/sbin/my_set service sip profile internal address 192.168.67.67
-#/opt/vyatta/sbin/my_set service sip profile internal codec inbound pcma
+/opt/vyatta/sbin/my_set service sip profile internal codec inbound pcma
 #/opt/vyatta/sbin/my_set service sip profile external mode external
 #/opt/vyatta/sbin/my_set service sip profile external codec inbound pcma
 #/opt/vyatta/sbin/my_set 
@@ -72,6 +73,17 @@ set_odbc() {
 set_db() {
 /opt/vyatta/sbin/my_set service sip db default testdb
 }
+set_gateway(){
+/opt/vyatta/sbin/my_set service sip profile external gateway voip-provider mode trunk
+/opt/vyatta/sbin/my_commit service sip profile external gateway voip-provider realm sip.089.com.ua
+/opt/vyatta/sbin/my_commit set service sip profile external gateway voip-provider from-domain 192.168.123.36
+/opt/vyatta/sbin/my_commit service sip profile external gateway voip-provider extension SBC
+/opt/vyatta/sbin/my_commit service sip profile external gateway voip-provider extension-in-contact true
+
+#/opt/vyatta/sbin/my_commit service sip profile external gateway voip-provider expire-seconds 50
+#/opt/vyatta/sbin/my_commit service sip profile external gateway voip-provider retry-seconds 90
+#/opt/vyatta/sbin/my_commit
+}
 run_commit() {
 /opt/vyatta/sbin/my_commit
 }
@@ -81,6 +93,7 @@ sudo ./test/t.pl --conf=cdr
 sudo ./test/t.pl --conf=odbc
 sudo ./test/t.pl --conf=db
 sudo ./test/t.pl --conf=cli
+sudo ./test/t.pl --conf=gateway
 }
 #/opt/vyatta/sbin/my_set 
 #/opt/vyatta/sbin/my_commit
@@ -93,6 +106,9 @@ case "$1" in
         ;;
     cli)
         set_:cli
+        ;;
+    gateway)
+        set_gateway
         ;;
     db)
         set_db
@@ -127,7 +143,7 @@ case "$1" in
         run_delete
         ;;
     *)
-        echo $"Usage sudo make install && $0 {set-all|test|delete|base|db|cdr|acl|odbc|profile|modules}"
+        echo $"Usage sudo make install && $0 {set-all|test|delete|base|db|cdr|acl|odbc|profile|gateway|modules}"
         exit 1
 esac
 

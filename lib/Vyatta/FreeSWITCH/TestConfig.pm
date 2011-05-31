@@ -82,7 +82,22 @@ sub confCli {
     my $fs_config = XMLin($fs_event_socket);
     return $fs_config->{settings}->{param}->{$param}->{value};
 }
-
+sub confGateway {
+    my ($self, $profile, $name, $param, $type) = @_;
+    
+    my $fs_gateway_dir = "$fs_profile_dir/$profile";
+    my $fs_gateway = "$fs_profile_dir/$profile/$name.xml";
+    my $fs_config = XMLin($fs_gateway);
+    if ($type eq 'name') {
+        return $fs_config->{gateway}->{name};
+        
+    }
+    else {
+        return $fs_config->{gateway}->{param}->{$param}->{value};
+        
+    }
+    
+}
 sub confAcl {
     my ($self, $name, $param) = @_;
     my $fs_config = XMLin($fs_acl, KeyAttr => {});
