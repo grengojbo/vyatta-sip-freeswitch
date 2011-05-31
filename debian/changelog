@@ -1,3 +1,11 @@
+vyatta-sip-freeswitch (0.3) unstable; urgency=low
+
+  * Fix bug create
+  * Modify vars configure
+  * Added auto complete to profile address
+
+ -- Oleg Dolya <oleg.dolya@gmail.com>  Tue, 31 May 2011 18:41:44 +0300
+
 vyatta-sip-freeswitch (0.2) unstable; urgency=low
 
   * This package was debianized
