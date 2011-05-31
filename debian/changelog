@@ -1,3 +1,10 @@
+vyatta-sip-freeswitch (0.4) unstable; urgency=low
+
+  * Added Socket Client ACL and test
+  * Added test to profile gateway
+
+ -- Oleg Dolya <oleg.dolya@gmail.com>  Wed, 01 Jun 2011 01:15:04 +0300
+
 vyatta-sip-freeswitch (0.3) unstable; urgency=low
 
   * Fix bug create
