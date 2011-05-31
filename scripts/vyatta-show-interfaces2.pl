@@ -40,6 +40,7 @@ use warnings;
 my %action_hash = (
     'show'       => \&run_show_intf,
     'show-brief' => \&run_show_intf_brief,
+    'show-address' => \&run_show_address,
     'show-count' => \&run_show_counters,
     'clear'      => \&run_clear_intf,
     'reset'      => \&run_reset_intf,
@@ -250,6 +251,21 @@ sub run_show_intf_brief {
 	    }
 	}
     }
+}
+
+sub run_show_address {
+    my @intfs = @_;
+    my @all_ip = ();
+    foreach my $intf (@intfs) {
+	my @ip_addr = get_ipaddr($intf);
+	if (scalar(@ip_addr) != 0) {
+	    foreach my $ip (@ip_addr) {
+            my ($addr, $net) = split('/', $ip);
+            push @all_ip, $addr;
+	    }
+	}
+    }
+    print join(' ', @all_ip);
 }
 
 sub run_show_counters {

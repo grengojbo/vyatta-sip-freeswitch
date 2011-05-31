@@ -1,4 +1,5 @@
 type: ipv4,ipv6
 help: IP address to bind
+allowed: /opt/vyatta/bin/vyatta-show-interfaces2.pl --action=show-address
 val_help: ipv4; IP address to bind
 val_help: ipv6; IPv6 address to bind

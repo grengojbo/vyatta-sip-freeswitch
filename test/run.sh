@@ -27,7 +27,7 @@ set_modules() {
 # Profile
 set_profile() {
 /opt/vyatta/sbin/my_set service sip profile internal mode internal
-#/opt/vyatta/sbin/my_set 
+/opt/vyatta/sbin/my_set service sip profile internal address 192.168.67.67
 #/opt/vyatta/sbin/my_set 
 #/opt/vyatta/sbin/my_set 
 #/opt/vyatta/sbin/my_set 
