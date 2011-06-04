@@ -25,27 +25,6 @@ set_base() {
 set_modules() {
 /opt/vyatta/sbin/my_set service sip modules conference
 }
-# Profile
-set_profile() {
-/opt/vyatta/sbin/my_set service sip profile internal mode internal
-/opt/vyatta/sbin/my_set service sip profile internal address 192.168.67.67
-/opt/vyatta/sbin/my_set service sip profile internal codec inbound pcma
-#/opt/vyatta/sbin/my_set service sip profile external mode external
-#/opt/vyatta/sbin/my_set service sip profile external codec inbound pcma
-#/opt/vyatta/sbin/my_set 
-}
-# CDR
-set_cdr() {
-/opt/vyatta/sbin/my_set service sip cdr csv
-#/opt/vyatta/sbin/my_set service sip cdr radius
-/opt/vyatta/sbin/my_set service sip cdr xml url http://example.com/cdr/ 
-/opt/vyatta/sbin/my_set service sip cdr xml auth-scheme basic
-/opt/vyatta/sbin/my_set service sip cdr xml username test
-/opt/vyatta/sbin/my_set service sip cdr xml password test 
-/opt/vyatta/sbin/my_set service sip cdr xml retries 5 
-/opt/vyatta/sbin/my_set service sip cdr xml err-log-dir /opt/freeswitch/log/xml_cdr
-/opt/vyatta/sbin/my_set service sip cdr xml delay 10
-}
 # ACL
 set_acl() {
 /opt/vyatta/sbin/my_set service sip acl mylan default deny
@@ -61,6 +40,28 @@ set_cli() {
 #/opt/vyatta/sbin/my_set service sip cli apply-inbound-acl lans
 #/opt/vyatta/sbin/my_set service sip cli acl lans
 }
+# CDR
+set_cdr() {
+/opt/vyatta/sbin/my_set service sip cdr csv
+#/opt/vyatta/sbin/my_set service sip cdr radius
+/opt/vyatta/sbin/my_set service sip cdr xml url http://example.com/cdr/ 
+/opt/vyatta/sbin/my_set service sip cdr xml auth-scheme basic
+/opt/vyatta/sbin/my_set service sip cdr xml username test
+/opt/vyatta/sbin/my_set service sip cdr xml password test 
+/opt/vyatta/sbin/my_set service sip cdr xml retries 5 
+/opt/vyatta/sbin/my_set service sip cdr xml err-log-dir /opt/freeswitch/log/xml_cdr
+/opt/vyatta/sbin/my_set service sip cdr xml delay 10
+}
+# Profile
+set_profile() {
+/opt/vyatta/sbin/my_set service sip profile internal mode internal
+/opt/vyatta/sbin/my_set service sip profile internal address 192.168.67.67
+/opt/vyatta/sbin/my_set service sip profile internal codec inbound pcma
+#/opt/vyatta/sbin/my_set service sip profile external mode external
+#/opt/vyatta/sbin/my_set service sip profile external codec inbound pcma
+#/opt/vyatta/sbin/my_set 
+}
+
 # ODBC
 set_odbc() {
 /opt/vyatta/sbin/my_set service sip odbc testdb mode mysql
