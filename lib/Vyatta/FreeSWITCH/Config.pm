@@ -1060,6 +1060,7 @@ sub confODBC {
     #$cfg->AddSection("ODBC Data Sources");
     #$cfg->WriteConfig();
     $cfg->RewriteConfig();
+    system("chown $uid:$gid $fs_odbc");
     $cmd = "exec confODBC\n";
     return ($cmd, undef);
 }

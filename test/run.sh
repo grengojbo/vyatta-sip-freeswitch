@@ -54,11 +54,11 @@ set_cdr() {
 }
 # Profile
 set_profile() {
-/opt/vyatta/sbin/my_set service sip profile internal mode internal
-/opt/vyatta/sbin/my_set service sip profile internal address 192.168.67.67
-/opt/vyatta/sbin/my_set service sip profile internal codec inbound pcma
-#/opt/vyatta/sbin/my_set service sip profile external mode external
-#/opt/vyatta/sbin/my_set service sip profile external codec inbound pcma
+/opt/vyatta/sbin/my_set service sip profile test_internal mode internal
+/opt/vyatta/sbin/my_set service sip profile test_internal address 192.168.67.67
+/opt/vyatta/sbin/my_set service sip profile test_internal codec inbound pcma
+#/opt/vyatta/sbin/my_set service sip profile test_external mode external
+#/opt/vyatta/sbin/my_set service sip profile test_external codec inbound pcma
 #/opt/vyatta/sbin/my_set 
 }
 
