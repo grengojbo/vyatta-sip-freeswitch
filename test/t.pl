@@ -65,6 +65,52 @@ elsif ($name eq 'acl') {
 elsif ($name eq 'db') {
     print "error db default\n" if ($tc->confDB('testdb', 'testdb:test:test') ne 'testdb:test:test');
 }
+elsif ($name eq 'profile') {
+    my $profile_name = 'test_external';
+    my $profile_ip = '10.10.10.10';
+    print "error profile $profile_name name\n" if ($tc->confProfile($profile_name, $profile_name, 'name') ne $profile_name);
+    print "error profile $profile_name debug\n" if ($tc->confProfile($profile_name, 'debug', 'param') ne '0');
+    print "error profile $profile_name sip-trace\n" if ($tc->confProfile($profile_name, 'sip-trace', 'param') ne 'no');
+    print "error profile $profile_name rfc2833-pt\n" if ($tc->confProfile($profile_name, 'rfc2833-pt', 'param') ne '101');
+    print "error profile $profile_name sip-port\n" if ($tc->confProfile($profile_name, 'sip-port', 'param') ne '5060');
+    print "error profile $profile_name dialplan\n" if ($tc->confProfile($profile_name, 'dialplan', 'param') ne 'XML');
+    print "error profile $profile_name context\n" if ($tc->confProfile($profile_name, 'context', 'param') ne 'public');
+    print "error profile $profile_name dtmf-duration\n" if ($tc->confProfile($profile_name, 'dtmf-duration', 'param') ne '2000');
+    print "error profile $profile_name inbound-codec-prefs\n" if ($tc->confProfile($profile_name, 'inbound-codec-prefs', 'param') ne 'PCMA');
+    print "error profile $profile_name outbound-codec-prefs\n" if ($tc->confProfile($profile_name, 'outbound-codec-prefs', 'param') ne 'PCMA');
+    print "error profile $profile_name rtp-timer-name\n" if ($tc->confProfile($profile_name, 'rtp-timer-name', 'param') ne 'soft');
+    print "error profile $profile_name manage-presence\n" if ($tc->confProfile($profile_name, 'manage-presence', 'param') ne 'false');
+    print "error profile $profile_name inbound-codec-negotiation\n" if ($tc->confProfile($profile_name, 'inbound-codec-negotiation', 'param') ne 'generous');
+    print "error profile $profile_name nonce-ttl\n" if ($tc->confProfile($profile_name, 'nonce-ttl', 'param') ne '60');
+    print "error profile $profile_name auth-calls\n" if ($tc->confProfile($profile_name, 'auth-calls', 'param') ne 'false');
+    print "error profile $profile_name rtp-ip\n" if ($tc->confProfile($profile_name, 'rtp-ip', 'param') ne $profile_ip);
+    print "error profile $profile_name sip-ip\n" if ($tc->confProfile($profile_name, 'sip-ip', 'param') ne $profile_ip);
+    print "error profile $profile_name ext-rtp-ip\n" if ($tc->confProfile($profile_name, 'ext-rtp-ip', 'param') ne $profile_ip);
+    print "error profile $profile_name ext-sip-ip\n" if ($tc->confProfile($profile_name, 'ext-sip-ip', 'param') ne $profile_ip);
+    print "error profile $profile_name rtp-timeout-sec\n" if ($tc->confProfile($profile_name, 'rtp-timeout-sec', 'param') ne '300');
+    print "error profile $profile_name rtp-hold-timeout-sec\n" if ($tc->confProfile($profile_name, 'rtp-hold-timeout-sec', 'param') ne '1800');
+    print "error profile $profile_name disable-transcoding\n" if ($tc->confProfile($profile_name, 'disable-transcoding', 'param') ne 'false');
+
+
+    $profile_name = 'test_internal';
+    $profile_ip = '192.168.67.67';
+    print "error profile $profile_name context\n" if ($tc->confProfile($profile_name, 'context', 'param') ne 'default');
+    print "error profile $profile_name auth-calls\n" if ($tc->confProfile($profile_name, 'auth-calls', 'param') ne 'true');
+    print "error profile $profile_name rtp-ip\n" if ($tc->confProfile($profile_name, 'rtp-ip', 'param') ne $profile_ip);
+    print "error profile $profile_name sip-ip\n" if ($tc->confProfile($profile_name, 'sip-ip', 'param') ne $profile_ip);
+    print "error profile $profile_name ext-rtp-ip\n" if ($tc->confProfile($profile_name, 'ext-rtp-ip', 'param') ne $profile_ip);
+    print "error profile $profile_name ext-sip-ip\n" if ($tc->confProfile($profile_name, 'ext-sip-ip', 'param') ne $profile_ip);
+    print "error profile $profile_name outbound-codec-prefs\n" if ($tc->confProfile($profile_name, 'outbound-codec-prefs', 'param') ne 'PCMA,speex@16000h@20i,speex@32000h@20i,speex@8000h@20i');
+
+    print "error profile $profile_name \n" if ($tc->confProfile($profile_name, 'bitpacking', 'param') ne 'aal2');
+    print "error profile $profile_name inbound-codec-negotiation\n" if ($tc->confProfile($profile_name, 'inbound-codec-negotiation', 'param') ne 'greedy');
+    print "error profile $profile_name disable-transcoding\n" if ($tc->confProfile($profile_name, 'disable-transcoding', 'param') ne 'true');
+    print "error profile $profile_name inbound-late-negotiation\n" if ($tc->confProfile($profile_name, 'inbound-late-negotiation', 'param') ne 'true');
+    print "error profile $profile_name auth-all-packets\n" if ($tc->confProfile($profile_name, 'auth-all-packets', 'param') ne 'false');
+    #print "error profile $profile_name \n" if ($tc->confProfile($profile_name, '', 'param') ne '');
+    #print "error profile $profile_name \n" if ($tc->confProfile($profile_name, '', 'param') ne '');
+    #print "error profile $profile_name \n" if ($tc->confProfile($profile_name, '', 'param') ne '');
+}
 elsif ($name eq 'gateway') {
     print "error gateway name\n" if ($tc->confGateway('external', 'voip-provider', '', 'name') ne 'voip-provider');
     print "error gateway realm\n" if ($tc->confGateway('external', 'voip-provider', 'realm', 'param') ne 'sip.089.com.ua');

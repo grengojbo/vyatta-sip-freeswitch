@@ -448,7 +448,7 @@ sub confGateway {
     else {
         if (!-e "$fs_gateway_dir/") {
             mkdir($fs_gateway_dir, 0750);
-            chown $uid, $gid, $fs_gateway_dir;
+            system("chown $uid:$gid $fs_gateway_dir");
             #print "Not exists profile dir: $fs_gateway_dir/\n";
         }
         my $user = undef;
@@ -552,6 +552,8 @@ sub confGateway {
         $fs_config_new->XMLout($fs_config, OutputFile => $fh);
         #$cmd = $fs_config_new->XMLout($fs_config);
         $cmd = "Create Gateway: $fs_gateway";
+        system("chown $uid:$gid $fs_gateway");
+        system("chmod 640 $fs_gateway");
         #$cmd = undef;
         return ($cmd, undef);
     }
@@ -628,8 +630,6 @@ sub confProfile {
         my $challenge_realm = (defined($config->returnValue("profile $name auth challenge-realm"))) ? $config->returnValue("profile $name auth challenge-realm") : 'auto_from';
         my $log_auth_failures = (defined($config->returnValue("profile $name auth log-auth-failures"))) ? $config->returnValue("profile $name auth log-auth-failures") : 'true';
         my $accept_blind_auth = (defined($config->returnValue("profile $name auth accept-blind-auth"))) ? $config->returnValue("profile $name auth accept-blind-auth") : undef;
-        my $auth_all_packets = (defined($config->returnValue("profile $name auth all-packets"))) ? $config->returnValue("profile $name auth all-packets") : 'false';
-        my $auth_calls = (defined($config->returnValue("profile $name auth calls"))) ? $config->returnValue("profile $name auth calls") : 'true';
         my $bitpacking = (defined($config->returnValue("profile $name codec bitpacking")) && $config->returnValue("profile $name codec bitpacking") eq 'enable') ? 'aal2' : undef;
         my $inbound_codec_negotiation = (defined($config->returnValue("profile $name codec negotiation"))) ? $config->returnValue("profile $name codec negotiation") : 'generous';
         my $inbound_late_negotiation = (defined($config->returnValue("profile $name codec late-negotiation"))) ? $config->returnValue("profile $name codec late-negotiation") : undef;
@@ -641,14 +641,14 @@ sub confProfile {
         my $apply_register_acl_def = undef;
         my $apply_proxy_acl = (defined($config->returnValue("profile $name acl proxy"))) ? $config->returnValue("profile $name acl proxy") : undef;
         my $apply_proxy_acl_def = undef;
-        if ($action eq 'create' && $mode eq 'internal') {
-            $auth_all_packets = 'false';
-            $auth_calls = 'true';
+        my $auth_all_packets_d = 'false';
+        my $auth_calls_d = 'true';
+        if ($mode eq 'external') {
+            $auth_all_packets_d = 'false';
+            $auth_calls_d = 'false';
         }
-        elsif ($action eq 'create' && $mode eq 'external') {
-            $auth_all_packets = 'false';
-            $auth_calls = 'false';
-        }
+        my $auth_all_packets = (defined($config->returnValue("profile $name auth all-packets"))) ? $config->returnValue("profile $name auth all-packets") : $auth_all_packets_d;
+        my $auth_calls = (defined($config->returnValue("profile $name auth calls"))) ? $config->returnValue("profile $name auth calls") : $auth_calls_d;
  
         my $fs_profile_example = $fs_example_dir."/$mode.xml";
 
@@ -669,10 +669,14 @@ sub confProfile {
         my $fs_config = XMLin($fs_profile, KeyAttr=>{});
         delete $fs_config->{aliases};
         delete $fs_config->{gateways};
+        delete $fs_config->{domains};
+        my @d = ();
+        push @d, {name => 'all', alias => 'false', parse => 'true' };
+        $fs_config->{domains}->{domain} = \@d;
+        my @g = ();
         if (scalar(@{$self->{_gateway}}) > 0) {
-            $fs_config->{gateways}->{name} = "X-PRE-PROCESS";
-            $fs_config->{gateways}->{cmd} = "include";
-            $fs_config->{gateways}->{data} = "$name/*.xml";
+            push @g, { cmd => "include", data => "$name/*.xml" };
+            $fs_config->{gateways}->{'X-PRE-PROCESS'} = \@g;
         }
         my $i = 0;
         foreach my $fs (@{$fs_config->{settings}->{param}}) {
@@ -743,11 +747,14 @@ sub confProfile {
         #push @{ $fs_config->{settings}->{param} }, { name => '', value => $ } if (defined($) && !defined($));
         #splice(@{$fs_config->{settings}->{param}}, $, 1) if (!defined($) && defined($));
         my $fs_config_new = XML::Simple->new(rootname=>'profile');
+        $fs_config->{name} = $name;
         open my $fh, '>:encoding(UTF-8)', $fs_profile_file or die "open($fs_profile_file): $!";
         $fs_config_new->XMLout($fs_config, OutputFile => $fh);
         #$cmd = $fs_config_new->XMLout($fs_config);
         $cmd = "Create Profile: $fs_profile_file";
         #$cmd = undef;
+        system("chown $uid:$gid $fs_profile_file");
+        system("chmod 640 $fs_profile_file");
         return ($cmd, undef);
     }
     
@@ -1061,6 +1068,7 @@ sub confODBC {
     #$cfg->WriteConfig();
     $cfg->RewriteConfig();
     system("chown $uid:$gid $fs_odbc");
+    system("chmod 640 $fs_odbc");
     $cmd = "exec confODBC\n";
     return ($cmd, undef);
 }

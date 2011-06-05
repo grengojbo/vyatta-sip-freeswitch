@@ -57,11 +57,25 @@ set_profile() {
 /opt/vyatta/sbin/my_set service sip profile test_internal mode internal
 /opt/vyatta/sbin/my_set service sip profile test_internal address 192.168.67.67
 /opt/vyatta/sbin/my_set service sip profile test_internal codec inbound pcma
-#/opt/vyatta/sbin/my_set service sip profile test_external mode external
-#/opt/vyatta/sbin/my_set service sip profile test_external codec inbound pcma
+/opt/vyatta/sbin/my_set service sip profile test_external mode external
+/opt/vyatta/sbin/my_set service sip profile test_external codec inbound pcma
+/opt/vyatta/sbin/my_set service sip profile test_external address 10.10.10.10
 #/opt/vyatta/sbin/my_set 
+/opt/vyatta/sbin/my_set service sip profile test_external context public
+/opt/vyatta/sbin/my_set service sip profile test_internal protocol tcp
+/opt/vyatta/sbin/my_set service sip profile test_internal codec outbound pcma
+/opt/vyatta/sbin/my_set service sip profile test_internal codec outbound speex
+/opt/vyatta/sbin/my_set service sip profile test_internal codec bitpacking enable
+/opt/vyatta/sbin/my_set service sip profile test_internal codec late-negotiation true 
+/opt/vyatta/sbin/my_set service sip profile test_internal codec negotiation greedy
+/opt/vyatta/sbin/my_set service sip profile test_internal codec transcoding disable
+#/opt/vyatta/sbin/my_set service sip profile test_internal 
 }
-
+delete_profile() {
+/opt/vyatta/sbin/my_delete service sip profile test_external
+/opt/vyatta/sbin/my_delete service sip profile test_internal
+/opt/vyatta/sbin/my_commit
+}
 # ODBC
 set_odbc() {
 /opt/vyatta/sbin/my_set service sip odbc testdb mode mysql
@@ -75,15 +89,18 @@ set_db() {
 /opt/vyatta/sbin/my_set service sip db default testdb
 }
 set_gateway(){
-/opt/vyatta/sbin/my_set service sip profile external gateway voip-provider mode trunk
-/opt/vyatta/sbin/my_commit service sip profile external gateway voip-provider realm sip.089.com.ua
-/opt/vyatta/sbin/my_commit set service sip profile external gateway voip-provider from-domain 192.168.123.36
-/opt/vyatta/sbin/my_commit service sip profile external gateway voip-provider extension SBC
-/opt/vyatta/sbin/my_commit service sip profile external gateway voip-provider extension-in-contact true
+/opt/vyatta/sbin/my_set service sip profile test_external gateway test-provider mode trunk
+/opt/vyatta/sbin/my_set service sip profile test_external gateway test-provider realm sip.089.com.ua
+/opt/vyatta/sbin/my_set service sip profile test_external gateway test-provider from-domain 10.10.10.10
+/opt/vyatta/sbin/my_set service sip profile test_external gateway test-provider extension SBC
+/opt/vyatta/sbin/my_set service sip profile test_external gateway test-provider extension-in-contact true
 
 #/opt/vyatta/sbin/my_commit service sip profile external gateway voip-provider expire-seconds 50
 #/opt/vyatta/sbin/my_commit service sip profile external gateway voip-provider retry-seconds 90
 #/opt/vyatta/sbin/my_commit
+}
+delete_gateway() {
+/opt/vyatta/sbin/my_delete service sip profile test_external gateway test-provider
 }
 run_commit() {
 /opt/vyatta/sbin/my_commit
@@ -94,16 +111,30 @@ sudo ./test/t.pl --conf=cdr
 sudo ./test/t.pl --conf=odbc
 sudo ./test/t.pl --conf=db
 sudo ./test/t.pl --conf=cli
+}
+test_profile() {
+sudo ./test/t.pl --conf=profile
+}
+test_gateway() {
 sudo ./test/t.pl --conf=gateway
 }
 #/opt/vyatta/sbin/my_set 
 #/opt/vyatta/sbin/my_commit
 #/opt/vyatta/sbin/my_delete service sip cdr csv
 #/opt/vyatta/sbin/my_delete service sip cdr radius
+#/opt/vyatta/sbin/my_delete service sip 
 #/opt/vyatta/sbin/my_commit
 case "$1" in
     test)
         test_all
+        ;;
+    test-profile)
+        delete_profile
+        set_profile
+        set_gateway
+        run_commit
+        test_profile
+        test_gateway
         ;;
     cli)
         set_:cli
@@ -144,7 +175,7 @@ case "$1" in
         run_delete
         ;;
     *)
-        echo $"Usage sudo make install && $0 {set-all|test|delete|base|db|cdr|acl|odbc|profile|gateway|modules}"
+        echo $"Usage sudo make install && $0 {set-all|test|test-profile|delete|base|db|cdr|acl|odbc|profile|gateway|modules}"
         exit 1
 esac
 
