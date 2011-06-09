@@ -1,0 +1,4 @@
+type: u32
+help: If a call goes beyond a certain dollar amount, flag or terminate it
+syntax:expression: $VAR(@) > 0 && $VAR(@) < 36001;
+                   "Must be between 1 and 36000"

@@ -1,0 +1,2 @@
+type: txt
+help: Custom SQL for loading current balance - overrides column names hannel vars are interpreted

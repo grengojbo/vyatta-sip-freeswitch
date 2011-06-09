@@ -84,6 +84,12 @@ set_odbc() {
 /opt/vyatta/sbin/my_set service sip odbc testdb port 3306
 /opt/vyatta/sbin/my_set service sip odbc testdb user test
 /opt/vyatta/sbin/my_set service sip odbc testdb host localhost
+/opt/vyatta/sbin/my_set service sip odbc testdb2 mode mysql
+/opt/vyatta/sbin/my_set service sip odbc testdb2 database testdb
+/opt/vyatta/sbin/my_set service sip odbc testdb2 password test
+/opt/vyatta/sbin/my_set service sip odbc testdb2 port 3306
+/opt/vyatta/sbin/my_set service sip odbc testdb2 user test
+/opt/vyatta/sbin/my_set service sip odbc testdb2 host 127.0.0.1
 }
 set_db() {
 /opt/vyatta/sbin/my_set service sip db default testdb
@@ -129,7 +135,7 @@ case "$1" in
         test_all
         ;;
     test-profile)
-        delete_profile
+        #delete_profile
         set_profile
         set_gateway
         run_commit

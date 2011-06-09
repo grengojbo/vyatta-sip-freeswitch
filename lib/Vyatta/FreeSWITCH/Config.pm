@@ -37,6 +37,7 @@ my $fs_acl = $fs_conf_dir.'/autoload_configs/acl.conf.xml';
 my $fs_db = $fs_conf_dir.'/autoload_configs/db.conf.xml';
 my $fs_profile_dir = $fs_conf_dir.'/sip_profiles';
 my $fs_example_dir = '/opt/vyatta/etc/freeswitch';
+my $fs_billing = $fs_conf_dir.'/autoload_configs/nibblebill.conf.xml';
 
 #my $status_dir = '/opt/vyatta/etc/openvpn/status';
 #my $status_itvl = 30;
@@ -70,7 +71,18 @@ my %fields = (
   _odbc_dsn     => undef,
   _odbc_user    => undef,
   _odbc_pass    => undef,
-  _odbc_def    => undef,
+  _odbc_def     => undef,
+  _billing      => undef,
+  _billing_odbc_name => undef,
+  _billing_odbc_user => undef,
+  _billing_odbc_pass => undef,
+  _tls_ca       => undef,
+  _tls_cert     => undef,
+  _tls_key      => undef,
+  _tls_dh       => undef,
+  _tls_crl      => undef,
+  _tls_role     => undef,
+  _is_empty     => 1,
   _cdr          => [],
   _odbc         => [],
   _odbc_list    => [],
@@ -87,14 +99,8 @@ my %fields = (
   _default_language       => undef,
   _multiple_registrations => undef,
   _sessions_per_second    => undef,
-  _tls_ca        => undef,
-  _tls_cert      => undef,
-  _tls_key       => undef,
-  _tls_dh        => undef,
-  _tls_crl       => undef,
-  _tls_role      => undef,
-  _is_empty      => 1,
 );
+my @application = ('bridge', 'hangup', 'nibblebill');
 my @languages_all = ('en', 'ru', 'de', 'es', 'fr', 'he', 'it', 'hl');
 #TODO: celt
 my @codecs_all = ('pcma', 'speex', 'pcmu', 'ilbc', 'g729', 'g723', 'amr', 'g722', 'gsm', 'g726', 'h263', 'h263-1998', 'h264');
@@ -127,7 +133,7 @@ my %modules_codecs_hash = (
     #<!--<'' =>'mod_opus',-->
 );
 
-my @modules_unsuport = ('voicemail', 'curl', 'conference', 'perl', 'python', 'billing', 'enum', 'rpc', 'event-multicast', 'dingaling', 'portaudio', 'skinny', 'directory', 'distributor', 'lcr', 'spy', 'snom',   'dialplan-directory', 'dialplan-asterisk', 'shout', 'spidermonkey', 'flite', 'tts-commandline', 'rss', 'fifo');
+my @modules_unsuport = ('voicemail', 'curl', 'conference', 'perl', 'python', 'enum', 'rpc', 'event-multicast', 'dingaling', 'portaudio', 'skinny', 'directory', 'distributor', 'lcr', 'spy', 'snom', 'dialplan-directory', 'dialplan-asterisk', 'shout', 'spidermonkey', 'flite', 'tts-commandline', 'rss', 'fifo');
 my @modules_cdr = ('xml', 'csv', 'sqlite', 'postgresql', 'json', 'radius');
 my %modules_cdr_hash = (
     'xml' => 'xml_cdr',
@@ -284,6 +290,20 @@ sub setup {
     $self->{_odbc_name} = $self->{_odbc_def};
     $self->{_odbc_dsn} = $self->{_odbc_name}.':'.$self->{_odbc_user}.':'.$self->{_odbc_pass};
   }
+  # Configuration NibleBilling
+  if(defined($config->exists('billing'))) {
+      $self->{_billing_odbc_name} = $config->returnValue('billing odbc');
+      if(defined($self->{_billing_odbc_name})) {
+        $self->{_billing_odbc_user} = (defined($config->returnValue("odbc $self->{_billing_odbc_name} user"))) ? $config->returnValue("odbc $self->{_billing_odbc_name} user") : undef;
+        $self->{_billing_odbc_pass} = (defined($config->returnValue("odbc $self->{_billing_odbc_name} password"))) ? $config->returnValue("odbc $self->{_billing_odbc_name} password") : undef;
+      }
+      elsif(defined($self->{_odbc_def})) {
+         $self->{_billing_odbc_name} = $self->{_odbc_name};
+         $self->{_billing_odbc_user} = $self->{_odbc_user};
+         $self->{_billing_odbc_pass} = $self->{_odbc_pass};
+      }
+      $self->{_billing} = 1;
+  }
   if (scalar(@{$self->{_acls}}) > 0) {
     $self->{_acl} = 1;
     my @tmp_acl_node = ();
@@ -317,6 +337,11 @@ sub get_command {
     return (undef, 'Must specify "set service sip cli password"') if (!defined($self->{_cli_password}));
     return (undef, 'Must specify "set service sip cli listen-port"') if (!defined($self->{_cli_port}));
     return (undef, 'Must specify "set service sip cli listen-address"') if (!defined($self->{_cli_address}));
+  }
+  if(defined($self->{_billing})) {
+    return (undef, 'Must specify "set service sip billing odbc" or "set service sip db default"') if(!defined($self->{_billing_odbc_name}));
+    return (undef, 'Must specify "set service sip odbc user"') if(!defined($self->{_billing_odbc_user}));
+    return (undef, 'Must specify "set service sip odbc password"') if(!defined($self->{_billing_odbc_pass}));
   }
   if (scalar(@{$self->{_cdr}}) > 0) {
     for my $rem (@{$self->{_cdr}}) {
@@ -938,6 +963,57 @@ sub confSwitch {
     print "exec confSwitch\n";
 }
 
+sub confBilling {
+    my ($self) = @_;
+    my $cmd = undef;
+    my $config = new Vyatta::Config;
+    $config->setLevel("$fsLevel");
+    my $fs_config = XMLin('<configuration name="nibblebill.conf" description="Nibble Billing"><settings /></configuration>', KeyAttr=>{});
+    my @a = ();
+    
+    my $db_column_account = (defined($config->returnValue("billing column-account"))) ? $config->returnValue("billing column-account") : 'id';
+    push @a, { name => 'db_column_account', value => $db_column_account };
+    my $db_column_cash = (defined($config->returnValue("billing column-cash"))) ? $config->returnValue("billing column-cash") : 'cash';
+    push @a, { name => 'db_column_cash', value => $db_column_cash };
+    my $custom_sql_lookup = (defined($config->returnValue("billing custom-sql-lookup"))) ? $config->returnValue("billing custom-sql-lookup") : undef;
+    push @a, { name => 'custom_sql_lookup', value => $custom_sql_lookup } if (defined($custom_sql_lookup));
+    my $custom_sql_save = (defined($config->returnValue("billing custom-sql-save"))) ? $config->returnValue("billing custom-sql-save") : undef;
+    push @a, { name => 'custom_sql_save', value => $custom_sql_save } if (defined($custom_sql_save));
+    my $global_heartbeat = (defined($config->returnValue("billing heartbeat"))) ? $config->returnValue("billing heartbeat") : '60';
+    push @a, { name => 'global_heartbeat', value => $global_heartbeat };
+    my $lowbal_action = (defined($config->returnValue("billing lowbal-action"))) ? $config->returnValue("billing lowbal-action") : 'play ding';
+    push @a, { name => 'lowbal_action', value => $lowbal_action };
+    my $lowbal_amt = (defined($config->returnValue("billing lowbal-amt"))) ? $config->returnValue("billing lowbal-amt") : '5';
+    push @a, { name => 'lowbal_amt', value => $lowbal_amt };
+    my $nobal_action = (defined($config->returnValue("billing nobal-action"))) ? $config->returnValue("billing nobal-action") : 'hangup';
+    push @a, { name => 'nobal_action', value => $nobal_action };
+    my $nobal_amt = (defined($config->returnValue("billing nobal-amt"))) ? $config->returnValue("billing nobal-amt") : '0';
+    push @a, { name => 'nobal_amt', value => $nobal_amt };
+    my $odbc = (defined($config->returnValue("billing odbc"))) ? $config->returnValue("billing odbc") : '';
+    #push @a, { name => '', value => $ } if (defined($));
+    my $percall_action = (defined($config->returnValue("billing percall-action"))) ? $config->returnValue("billing percall-action") : 'hangup';
+    push @a, { name => 'percall_action', value => $percall_action };
+    my $percall_max_amt = (defined($config->returnValue("billing percall-max-amt"))) ? $config->returnValue("billing percall-max-amt") : '100';
+    push @a, { name => 'percall_max_amt', value => $percall_max_amt };
+    my $db_table = (defined($config->returnValue("billing table"))) ? $config->returnValue("billing table") : 'accounts';
+    push @a, { name => 'db_table', value => $db_table };
+    push @a, { name => 'db_username', value => $self->{_billing_odbc_user} } if (defined($self->{_billing_odbc_user}));
+    push @a, { name => 'db_password', value => $self->{_billing_odbc_pass} } if (defined($self->{_billing_odbc_pass}));
+    push @a, { name => 'db_dsn', value => $self->{_billing_odbc_name} } if (defined($self->{_billing_odbc_name}));
+    #my $ = (defined($config->returnValue("billing "))) ? $config->returnValue("billing ") : '';
+    #push @a, { name => '', value => $ } if (defined($));
+    
+    $fs_config->{'settings'}->{param} = \@a;
+    my $fs_config_new = XML::Simple->new(rootname=>'configuration');
+    open my $fh, '>:encoding(UTF-8)', $fs_billing or die "open($fs_billing): $!";
+    $fs_config_new->XMLout($fs_config, OutputFile=>$fh);
+    $cmd = $fs_config_new->XMLout($fs_config);
+    #$cmd = undef;
+    #$cmd = "exec confBilling $fs_billing\n";
+    system("chown $uid:$gid $fs_billing");
+    system("chmod 640 $fs_billing");
+    return ($cmd, undef);
+}
 sub confAcl {
     my ($self) = @_;
     my $cmd = undef;

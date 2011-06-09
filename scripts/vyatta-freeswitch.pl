@@ -60,18 +60,19 @@ EOF
 }
 
 GetOptions("conf=s"  => \$conf_name,
-       "show=s"	       => \$show_names,
-       "reload=s"	       => \$reload_names,
-       "profile=s"	       => \$profile_names,
-       "gateway=s"	       => \$gateway_names,
-       "user=s"	       => \$user_names,
-       "cdr=s"	       => \$cdr_name,
-       "db=s"	       => \$db_name,
-       "action=s"	       => \$action,
-       "update=s"	       => \$action_update,
-       "create=s"	       => \$action_create,
-       "delete=s"	       => \$action_delete,
+       "show=s"	     => \$show_names,
+       "reload=s"	 => \$reload_names,
+       "profile=s"	 => \$profile_names,
+       "gateway=s"	 => \$gateway_names,
+       "user=s"	     => \$user_names,
+       "cdr=s"	     => \$cdr_name,
+       "db=s"	     => \$db_name,
+       "action=s"	 => \$action,
+       "update=s"	 => \$action_update,
+       "create=s"	 => \$action_create,
+       "delete=s"	 => \$action_delete,
 ) or usage();
+
 if (!defined($action)) { $action = 'update'; }
 if (defined($action_delete)) {
     $action_name = 'delete';
@@ -197,6 +198,10 @@ sub fs_conf {
         }
         elsif ($name eq 'lang') {
             $config->confLanguage();
+            $config->confModules();
+        }
+        elsif ($name eq 'billing') {
+            ($cmd, $err) = $config->confBilling();
             $config->confModules();
         }
         elsif ($name eq 'cli') {

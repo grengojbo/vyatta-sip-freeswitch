@@ -1,0 +1,4 @@
+type: u32
+help: Default heartbeat interval. Set to 0 for no heartbeat
+syntax:expression: $VAR(@) > 0 && $VAR(@) < 36001;
+                   "Must be between 1 and 36000"

@@ -1,0 +1,4 @@
+type: u32
+help: By default, warn a caller when their balance
+syntax:expression: $VAR(@) > 0 && $VAR(@) < 36001;
+                   "Must be between 1 and 36000"

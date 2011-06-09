@@ -1,0 +1,9 @@
+priority: 993
+help: Nibble Billing
+create:expression: exec "sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --conf=billing --action=create"
+end: if [ ${COMMIT_ACTION} = 'DELETE' ]; then
+        sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --conf=billing --action=delete;
+    fi;
+    if [ ${COMMIT_ACTION} = 'ACTIVE' ]; then
+        sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --conf=billing --action=update;
+    fi;
