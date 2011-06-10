@@ -85,10 +85,10 @@ set_odbc() {
 /opt/vyatta/sbin/my_set service sip odbc testdb user test
 /opt/vyatta/sbin/my_set service sip odbc testdb host localhost
 /opt/vyatta/sbin/my_set service sip odbc testdb2 mode mysql
-/opt/vyatta/sbin/my_set service sip odbc testdb2 database testdb
-/opt/vyatta/sbin/my_set service sip odbc testdb2 password test
+/opt/vyatta/sbin/my_set service sip odbc testdb2 database testdb2
+/opt/vyatta/sbin/my_set service sip odbc testdb2 password test2
 /opt/vyatta/sbin/my_set service sip odbc testdb2 port 3306
-/opt/vyatta/sbin/my_set service sip odbc testdb2 user test
+/opt/vyatta/sbin/my_set service sip odbc testdb2 user test2
 /opt/vyatta/sbin/my_set service sip odbc testdb2 host 127.0.0.1
 }
 set_db() {
@@ -108,6 +108,28 @@ set_gateway(){
 delete_gateway() {
 /opt/vyatta/sbin/my_delete service sip profile test_external gateway test-provider
 }
+set_billing() {
+/opt/vyatta/sbin/my_set service sip billing
+}
+delete_billing() {
+/opt/vyatta/sbin/my_delete service sip billing
+/opt/vyatta/sbin/my_commit
+}
+set_billing2() {
+/opt/vyatta/sbin/my_set service sip billing odbc testdb2
+/opt/vyatta/sbin/my_set service sip billing custom-sql-lookup 'SELECT cash AS nibble_balance FROM accounts WHERE account_code=${nibble_account}'
+/opt/vyatta/sbin/my_set service sip billing custom-sql-save 'UPDATE accounts SET cash=cash-${nibble_increment} WHERE account_code=${nibble_account}'
+/opt/vyatta/sbin/my_set service sip billing column-account ac_id
+/opt/vyatta/sbin/my_set service sip billing column-cash money
+/opt/vyatta/sbin/my_set service sip billing heartbeat 30
+/opt/vyatta/sbin/my_set service sip billing lowbal-amt 1
+/opt/vyatta/sbin/my_set service sip billing lowbal-action nax
+/opt/vyatta/sbin/my_set service sip billing table billing
+/opt/vyatta/sbin/my_set service sip billing nobal-action nax
+/opt/vyatta/sbin/my_set service sip billing nobal-amt 1
+/opt/vyatta/sbin/my_set service sip billing percall-max-amt 1000
+/opt/vyatta/sbin/my_set service sip billing percall-action nax
+}
 run_commit() {
 /opt/vyatta/sbin/my_commit
 }
@@ -123,6 +145,12 @@ sudo ./test/t.pl --conf=profile
 }
 test_gateway() {
 sudo ./test/t.pl --conf=gateway
+}
+test_billing() {
+sudo ./test/t.pl --conf=billing
+}
+test_billing2() {
+sudo ./test/t.pl --conf=billing2
 }
 #/opt/vyatta/sbin/my_set 
 #/opt/vyatta/sbin/my_commit
@@ -142,13 +170,25 @@ case "$1" in
         test_profile
         test_gateway
         ;;
+    test-billing)
+        #delete_billing
+        set_odbc
+        set_db
+        set_billing
+        run_commit
+        test_billing
+        set_billing2
+        run_commit
+        test_billing2
+        ;;
     cli)
-        set_:cli
+        set_cli
         ;;
     gateway)
         set_gateway
         ;;
     db)
+        set_odbc
         set_db
         ;;
     modules)
@@ -166,9 +206,6 @@ case "$1" in
     acl)
         set_acl
         ;;
-    odbc)
-        set_odbc
-        ;;
     set-all)
         set_base
         set_acl
@@ -181,7 +218,7 @@ case "$1" in
         run_delete
         ;;
     *)
-        echo $"Usage sudo make install && $0 {set-all|test|test-profile|delete|base|db|cdr|acl|odbc|profile|gateway|modules}"
+        echo $"Usage sudo make install && $0 {set-all|test|test-profile|test-billing|delete|base|db|cdr|acl|profile|gateway|modules}"
         exit 1
 esac
 

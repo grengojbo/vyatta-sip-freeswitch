@@ -65,6 +65,41 @@ elsif ($name eq 'acl') {
 elsif ($name eq 'db') {
     print "error db default\n" if ($tc->confDB('testdb', 'testdb:test:test') ne 'testdb:test:test');
 }
+elsif ($name eq 'billing') {
+    print "error billing db_dsn\n" if ($tc->confBilling('db_dsn') ne 'testdb');
+    print "error billing db_password\n" if ($tc->confBilling('db_password') ne 'test');
+    print "error billing db_username\n" if ($tc->confBilling('db_username') ne 'test');
+    print "error billing db_table\n" if ($tc->confBilling('db_table') ne 'accounts');
+    print "error billing db_column_cash\n" if ($tc->confBilling('db_column_cash') ne 'cash');
+    print "error billing db_column_account\n" if ($tc->confBilling('db_column_account') ne 'id');
+    print "error billing global_heartbeat\n" if ($tc->confBilling('global_heartbeat') ne '60');
+    print "error billing lowbal_amt\n" if ($tc->confBilling('lowbal_amt') ne '5');
+    print "error billing lowbal_action\n" if ($tc->confBilling('lowbal_action') ne 'play ding');
+    print "error billing nobal_amt\n" if ($tc->confBilling('nobal_amt') ne '0');
+    print "error billing nobal_action\n" if ($tc->confBilling('nobal_action') ne 'hangup');
+    print "error billing percall_max_amt\n" if ($tc->confBilling('percall_max_amt') ne '100');
+    print "error billing percall_action\n" if ($tc->confBilling('percall_action') ne 'hangup');
+    #print "error billing ".$tc->confBilling('db_dsn')."\n";
+    print "No module load mod_nibblebill\n" if (!defined($tc->confModules('nibblebill')));
+}
+elsif ($name eq 'billing2') {
+    print "error billing db_dsn\n" if ($tc->confBilling('db_dsn') ne 'testdb2');
+    print "error billing db_password\n" if ($tc->confBilling('db_password') ne 'test2');
+    print "error billing db_username\n" if ($tc->confBilling('db_username') ne 'test2');
+    print "error billing db_table\n" if ($tc->confBilling('db_table') ne 'billing');
+    print "error billing db_column_cash\n" if ($tc->confBilling('db_column_cash') ne 'money');
+    print "error billing db_column_account\n" if ($tc->confBilling('db_column_account') ne 'ac_id');
+    print "error billing global_heartbeat\n" if ($tc->confBilling('global_heartbeat') ne '30');
+    print "error billing lowbal_amt\n" if ($tc->confBilling('lowbal_amt') ne '1');
+    print "error billing lowbal_action\n" if ($tc->confBilling('lowbal_action') ne 'nax');
+    print "error billing nobal_amt\n" if ($tc->confBilling('nobal_amt') ne '1');
+    print "error billing nobal_action\n" if ($tc->confBilling('nobal_action') ne 'nax');
+    print "error billing percall_max_amt\n" if ($tc->confBilling('percall_max_amt') ne '1000');
+    print "error billing percall_action\n" if ($tc->confBilling('percall_action') ne 'nax');
+    print "error billing \n" if ($tc->confBilling('custom_sql_lookup') ne 'SELECT cash AS nibble_balance FROM accounts WHERE account_code=${nibble_account}');
+    print "error billing \n" if ($tc->confBilling('custom_sql_save') ne 'UPDATE accounts SET cash=cash-${nibble_increment} WHERE account_code=${nibble_account}');
+    #print "error billing ".$tc->confBilling('db_dsn')."\n";
+}
 elsif ($name eq 'profile') {
     my $profile_name = 'test_external';
     my $profile_ip = '10.10.10.10';

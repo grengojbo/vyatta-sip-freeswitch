@@ -20,6 +20,8 @@ my $fs_acl = $fs_conf_dir.'/autoload_configs/acl.conf.xml';
 my $fs_db = $fs_conf_dir.'/autoload_configs/db.conf.xml';
 my $fs_profile_dir = $fs_conf_dir.'/sip_profiles';
 my $fs_example_dir = '/opt/vyatta/etc/freeswitch';
+my $fs_billing = $fs_conf_dir.'/autoload_configs/nibblebill.conf.xml';
+my $fs_dialplan_dir = $fs_conf_dir.'/dialplan';
 
 my %modules_cdr_hash = (
     'xml' => 'xml_cdr',
@@ -76,7 +78,11 @@ sub confDB {
     my $fs_config = XMLin($fs_db);
     return $fs_config->{settings}->{param}->{value};
 }
-
+sub confBilling {
+    my ($self, $param) = @_;
+    my $fs_config = XMLin($fs_billing);
+    return $fs_config->{settings}->{param}->{$param}->{value};
+}
 sub confCli {
     my ($self, $param) = @_;
     my $fs_config = XMLin($fs_event_socket);

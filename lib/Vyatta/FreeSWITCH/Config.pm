@@ -38,6 +38,7 @@ my $fs_db = $fs_conf_dir.'/autoload_configs/db.conf.xml';
 my $fs_profile_dir = $fs_conf_dir.'/sip_profiles';
 my $fs_example_dir = '/opt/vyatta/etc/freeswitch';
 my $fs_billing = $fs_conf_dir.'/autoload_configs/nibblebill.conf.xml';
+my $fs_dialplan_dir = $fs_conf_dir.'/dialplan';
 
 #my $status_dir = '/opt/vyatta/etc/openvpn/status';
 #my $status_itvl = 30;
@@ -427,8 +428,13 @@ sub confModules {
     }
     if (scalar(@{$self->{_modules}}) > 0) {
         for my $rem (@{$self->{_modules}}) {
-            push @{ $fs_config->{modules}->{load} }, { 'module' => $modules_cmd_hash{$rem} };
+            if($rem ne 'billing') {
+                push @{ $fs_config->{modules}->{load} }, { 'module' => $modules_cmd_hash{$rem} };
+            }
         }
+    }
+    if(defined($self->{_billing_odbc_name})) {
+        push @{ $fs_config->{modules}->{load} }, { 'module' => $modules_cmd_hash{billing} };
     }
     push @{ $fs_config->{modules}->{load} }, { 'module' => 'mod_lua' };
     
@@ -989,8 +995,6 @@ sub confBilling {
     push @a, { name => 'nobal_action', value => $nobal_action };
     my $nobal_amt = (defined($config->returnValue("billing nobal-amt"))) ? $config->returnValue("billing nobal-amt") : '0';
     push @a, { name => 'nobal_amt', value => $nobal_amt };
-    my $odbc = (defined($config->returnValue("billing odbc"))) ? $config->returnValue("billing odbc") : '';
-    #push @a, { name => '', value => $ } if (defined($));
     my $percall_action = (defined($config->returnValue("billing percall-action"))) ? $config->returnValue("billing percall-action") : 'hangup';
     push @a, { name => 'percall_action', value => $percall_action };
     my $percall_max_amt = (defined($config->returnValue("billing percall-max-amt"))) ? $config->returnValue("billing percall-max-amt") : '100';
@@ -1007,9 +1011,9 @@ sub confBilling {
     my $fs_config_new = XML::Simple->new(rootname=>'configuration');
     open my $fh, '>:encoding(UTF-8)', $fs_billing or die "open($fs_billing): $!";
     $fs_config_new->XMLout($fs_config, OutputFile=>$fh);
-    $cmd = $fs_config_new->XMLout($fs_config);
+    #$cmd = $fs_config_new->XMLout($fs_config);
     #$cmd = undef;
-    #$cmd = "exec confBilling $fs_billing\n";
+    $cmd = "exec confBilling create: $fs_billing\n";
     system("chown $uid:$gid $fs_billing");
     system("chmod 640 $fs_billing");
     return ($cmd, undef);
