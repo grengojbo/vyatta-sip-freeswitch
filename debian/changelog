@@ -1,3 +1,12 @@
+vyatta-sip-freeswitch (0.5) unstable; urgency=low
+
+  * modified:   test/run.sh
+  * fixes #1
+  * Added test to profile and fixed #4 does not change the name of the
+    profile
+
+ -- Oleg Dolya <oleg.dolya@gmail.com>  Mon, 06 Jun 2011 13:32:54 +0300
+
 vyatta-sip-freeswitch (0.4) unstable; urgency=low
 
   * Added Socket Client ACL and test
