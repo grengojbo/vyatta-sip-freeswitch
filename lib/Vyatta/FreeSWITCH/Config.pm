@@ -96,6 +96,7 @@ my %fields = (
   _language     => [],
   _modules      => [],
   _context      => [],
+  _extension    => [],
   _zrtp_secure_media      => undef,
   _default_language       => undef,
   _multiple_registrations => undef,
@@ -260,7 +261,7 @@ sub setup {
   $self->{_mode} = $config->returnValue('mode');
   my @tmp_modules = $config->returnValues('modules');
   $self->{_modules} = \@tmp_modules;
-  my @tmp_context = $config->returnValues('dialplan context');
+  my @tmp_context = $config->listNodes('dialplan context');
   $self->{_context} = \@tmp_context;
   $self->{_multiple_registrations} = $config->returnValue('multiple-registrations');
   my @tmp_profile = $config->returnValues('profile');
@@ -333,6 +334,7 @@ sub get_command {
   return (undef, 'Must specify "default-language"') if (!defined($self->{_default_language}));
   return (undef, 'Must specify "codecs"') if (scalar(@{$self->{_codecs}}) == 0);
   return (undef, 'Must specify "domain-name"') if (!defined($self->{_domain_name}));
+  #return (undef, 'Must specify "dialplan context"') if (scalar(@{$self->{_context}}) == 0);
   #return (undef, 'Must specify "profile"') if (scalar(@{$self->{_profile}}) == 0);
   if (defined($self->{_cli})) {
     return (undef, 'Must specify "set service sip cli password"') if (!defined($self->{_cli_password}));
@@ -589,6 +591,155 @@ sub confGateway {
         return ($cmd, undef);
     }
 }
+sub confExtension {
+    my ($self, $name, $context, $action) = @_;
+    my $address = undef;
+    my $cmd = undef;
+    my $fs_extension = undef;
+    my $fs_extension_example = undef;
+    my $fs_extension_file = undef;
+    my $fs_extension_dir = $fs_dialplan_dir.'/'.$context;
+
+    my $config = new Vyatta::Config;
+    $config->setLevel("$fsLevel");
+    my $mode = (defined($config->returnValue("dialplan context $context extension $name mode"))) ? $config->returnValue("dialplan context $context extension $name mode") : undef;
+    my $rule = (defined($config->returnValue("dialplan context $context extension $name rule"))) ? $config->returnValue("dialplan context $context extension $name rule") : undef;
+    if (defined($mode)) {
+        $fs_extension_example = $fs_example_dir."/extension_$mode.xml";
+    }
+    else {
+        $fs_extension_example = $fs_example_dir."/extension.xml";
+    }
+    if (defined($rule)) {
+        $fs_extension_file = $fs_extension_dir.'/'.$rule.'-'.$name.'.xml';
+    }
+    else {
+        $fs_extension_file = $fs_extension_dir.'/'.$name.'.xml';
+    }
+    #my $ = (defined($config->returnValue("dialplan context $context extension $name "))) ? $config->returnValue("dialplan context $context extension $name ") : undef;
+
+    if ($action eq 'delete') {
+        if (-e $fs_extension_file) {
+            unlink($fs_extension_file);
+            $cmd = "Delete dialplan extension: $name (successfully).\n";
+        }
+        else {
+            $cmd = "File was not deleted.\n"
+        }
+        return ($cmd, undef);
+    }
+    else {
+
+        if (!-e $fs_extension_file && -e $fs_extension_example) {
+            $fs_extension = $fs_extension_example;
+        }
+        elsif (-e $fs_extension_file) {
+            $fs_extension = $fs_extension_file;
+        }
+        else {
+            return (undef, "Not exists example dialplan context: $fs_extension_example and $fs_extension_file\n");
+        }
+        if (!-e "$fs_extension_dir/") {
+            mkdir($fs_extension_dir, 0750);
+            system("chown $uid:$gid $fs_extension_dir");
+            #print "Not exists profile dir: $fs_gateway_dir/\n";
+        }
+        #my $ = (defined($config->returnValue("dialplan context $context extension $name "))) ? $config->returnValue("dialplan context $context extension $name ") : undef;
+        my $fs_config = XMLin($fs_extension, KeyAttr=>{});
+        #delete $fs_config->{context}->{'X-PRE-PROCESS'};
+        $fs_config->{extension}->{name} = $name;
+        if (defined($mode) && $mode eq 'local') {
+            my $i = 0;
+            my $destination_number = (defined($config->returnValue("dialplan context $context extension $name destination-number"))) ? $config->returnValue("dialplan context $context extension $name destination-number") : undef;
+            my $dialed_extension = (defined($config->returnValue("dialplan context $context extension $name dialed-extension"))) ? $config->returnValue("dialplan context $context extension $name dialed-extension") : undef;
+            if ($fs_config->{extension}->{condition}->{field} eq 'destination_number' && defined($destination_number)) { $fs_config->{extension}->{condition}->{expression} = $destination_number; }
+            foreach my $fs (@{$fs_config->{extension}->{condition}->{action}}) {
+                if (defined($dialed_extension) && ($fs->{application} eq 'set' || $fs->{application} eq 'export')) { 
+                    my ($k, $v) = split('=', $fs->{data});
+                    if ($k eq 'dialed_extension') {
+                        $fs->{data} = 'dialed_extension='.$dialed_extension;
+                    }
+                }
+                elsif ($fs->{application} eq 'bridge') {
+                    my ($k, $v) = split('/', $fs->{data});
+                    if ($self->{_mode} eq 'pbx' && ($k eq 'user' || $k eq 'sofia')) {
+                        $fs->{data} = 'user/${dialed_extension}@${domain_name}';
+                    }
+                    elsif ($self->{_mode} eq 'server' && ($k eq 'user' || $k eq 'sofia')) {
+                        $fs->{data} = 'sofia/${domain_name}/${dialed_extension}';
+                    }
+                }
+                $i++;
+            }
+        }
+        #my @e = ();
+        #if (scalar(@{$self->{_extension}}) > 0) {
+        #    push @e, { cmd => "include", data => "$name/*.xml" };
+        #    $fs_config->{context}->{'X-PRE-PROCESS'} = \@e;
+        #}
+        my $fs_config_new = XML::Simple->new(rootname=>'include');
+        open my $fh, '>:encoding(UTF-8)', $fs_extension_file or die "open($fs_extension_file): $!";
+        $fs_config_new->XMLout($fs_config, OutputFile => $fh);
+        #$cmd = $fs_config_new->XMLout($fs_config);
+        $cmd = "Create Dialplan extension: $fs_extension_file";
+        system("chown $uid:$gid $fs_extension_file");
+        system("chmod 640 $fs_extension_file");
+        return ($cmd, undef);
+    }
+}
+sub confContext {
+    my ($self, $name, $action) = @_;
+    my $address = undef;
+    my $cmd = undef;
+    my $fs_context = undef;
+    my $fs_context_file = $fs_dialplan_dir.'/'.$name.'.xml';
+
+    my $config = new Vyatta::Config;
+    $config->setLevel("$fsLevel");
+    if ($action eq 'delete') {
+        if (-e $fs_context_file) {
+            unlink($fs_context_file);
+            system("rm -Rf $fs_dialplan_dir/$name");
+            $cmd = "Delete dialplan context: $name (successfully).\n";
+        }
+        else {
+            $cmd = "File was not deleted.\n"
+        }
+        return ($cmd, undef);
+    }
+    else {
+        my $mode = $config->returnValue("dialplan context $name mode");
+        my @tmp_extension = $config->listNodes("dialplan context $name extension");
+        my $fs_context_example = $fs_example_dir."/context_$mode.xml";
+
+        if (!-e $fs_context_file && -e $fs_context_example) {
+            $fs_context = $fs_context_example;
+        }
+        elsif (-e $fs_context_file) {
+            $fs_context = $fs_context_file;
+        }
+        else {
+            return (undef, "Not exists example dialplan context: $fs_context_example and $fs_context_file\n");
+        }
+        my $fs_config = XMLin($fs_context, KeyAttr=>{});
+        delete $fs_config->{context}->{'X-PRE-PROCESS'};
+        $fs_config->{context}->{name} = $name;
+        
+        my @e = ();
+        if (scalar(@tmp_extension) > 0) {
+            push @e, { cmd => "include", data => "$name/*.xml" };
+            $fs_config->{context}->{'X-PRE-PROCESS'} = \@e;
+        }
+        my $fs_config_new = XML::Simple->new(rootname=>'include');
+        open my $fh, '>:encoding(UTF-8)', $fs_context_file or die "open($fs_context_file): $!";
+        $fs_config_new->XMLout($fs_config, OutputFile => $fh);
+        #$cmd = $fs_config_new->XMLout($fs_config);
+        $cmd = "Create Dialplan context: $fs_context_file";
+        system("chown $uid:$gid $fs_context_file");
+        system("chmod 640 $fs_context_file");
+        return ($cmd, undef);
+    }
+}
 sub confProfile {
     my ($self, $name, $action) = @_;
     #print "exec confProfile\n";
@@ -616,6 +767,7 @@ sub confProfile {
         return ($cmd, undef);
     }
     else {
+        return (undef, 'Must specify "dialplan context"') if (scalar(@{$self->{_context}}) == 0);
         my $mode = $config->returnValue("profile $name mode");
         $address = $config->returnValue("profile $name address");
         my $inbound_codec_prefs = undef;

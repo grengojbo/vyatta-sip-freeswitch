@@ -19,7 +19,8 @@ set_base() {
 /opt/vyatta/sbin/my_set service sip codecs speex
 /opt/vyatta/sbin/my_set service sip codecs pcma
 /opt/vyatta/sbin/my_set service sip domain-name example.com
-/opt/vyatta/sbin/my_set service sip dialplan context public
+/opt/vyatta/sbin/my_set service sip dialplan context default mode default
+/opt/vyatta/sbin/my_set service sip dialplan context public mode public
 }
 # modules
 set_modules() {
@@ -51,6 +52,13 @@ set_cdr() {
 /opt/vyatta/sbin/my_set service sip cdr xml retries 5 
 /opt/vyatta/sbin/my_set service sip cdr xml err-log-dir /opt/freeswitch/log/xml_cdr
 /opt/vyatta/sbin/my_set service sip cdr xml delay 10
+}
+# Dialplan
+set_dialplan() {
+/opt/vyatta/sbin/my_set service sip context test extension lalala mode local
+/opt/vyatta/sbin/my_set service sip context test extension lalala rule 10
+/opt/vyatta/sbin/my_set service sip context test extension lalala destination-number "^(10[01][0-9])$"
+/opt/vyatta/sbin/my_set service sip context test extension lalala dialed-extension "$1"
 }
 # Profile
 set_profile() {

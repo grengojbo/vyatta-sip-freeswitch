@@ -1,0 +1,3 @@
+type: txt
+help: You may set an extra attribute inline="true" on an action so that it will be executed during the hunting phase of the dialplan
+syntax:expression: $VAR(@) in "true", "false"
