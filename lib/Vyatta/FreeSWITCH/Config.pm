@@ -644,15 +644,31 @@ sub confExtension {
             system("chown $uid:$gid $fs_extension_dir");
             #print "Not exists profile dir: $fs_gateway_dir/\n";
         }
+        #my $ = (defined($config->returnValue("dialplan context $context extension $name "))) ? $config->returnValue("dialplan context $context extension $name ") : undef;
         my $fs_config = XMLin($fs_extension, KeyAttr=>{});
         #delete $fs_config->{context}->{'X-PRE-PROCESS'};
         $fs_config->{extension}->{name} = $name;
         if (defined($mode) && $mode eq 'local') {
             my $i = 0;
-            if ($fs_config->{extension}->{condition}->{field} eq 'destination_number') { $fs_config->{extension}->{condition}->{expression} = 'ssssssssssssssssssssssssss'; }
+            my $destination_number = (defined($config->returnValue("dialplan context $context extension $name destination-number"))) ? $config->returnValue("dialplan context $context extension $name destination-number") : undef;
+            my $dialed_extension = (defined($config->returnValue("dialplan context $context extension $name dialed-extension"))) ? $config->returnValue("dialplan context $context extension $name dialed-extension") : undef;
+            if ($fs_config->{extension}->{condition}->{field} eq 'destination_number' && defined($destination_number)) { $fs_config->{extension}->{condition}->{expression} = $destination_number; }
             foreach my $fs (@{$fs_config->{extension}->{condition}->{action}}) {
-                if ($fs->{application} eq 'set') { $fs->{data} = 'ssssssssssssssssssssssssss'; }
-                #elsif ($fs->{} eq 'rtp-ip') { $fs->{value} = $rtp_ip; }
+                if (defined($dialed_extension) && ($fs->{application} eq 'set' || $fs->{application} eq 'export')) { 
+                    my ($k, $v) = split('=', $fs->{data});
+                    if ($k eq 'dialed_extension') {
+                        $fs->{data} = 'dialed_extension='.$dialed_extension;
+                    }
+                }
+                elsif ($fs->{application} eq 'bridge') {
+                    my ($k, $v) = split('/', $fs->{data});
+                    if ($self->{_mode} eq 'pbx' && ($k eq 'user' || $k eq 'sofia')) {
+                        $fs->{data} = 'user/${dialed_extension}@${domain_name}';
+                    }
+                    elsif ($self->{_mode} eq 'server' && ($k eq 'user' || $k eq 'sofia')) {
+                        $fs->{data} = 'sofia/${domain_name}/${dialed_extension}';
+                    }
+                }
                 $i++;
             }
         }
@@ -664,8 +680,8 @@ sub confExtension {
         my $fs_config_new = XML::Simple->new(rootname=>'include');
         open my $fh, '>:encoding(UTF-8)', $fs_extension_file or die "open($fs_extension_file): $!";
         $fs_config_new->XMLout($fs_config, OutputFile => $fh);
-        $cmd = $fs_config_new->XMLout($fs_config);
-        #$cmd = "Create Dialplan extension: $fs_extension_file";
+        #$cmd = $fs_config_new->XMLout($fs_config);
+        $cmd = "Create Dialplan extension: $fs_extension_file";
         system("chown $uid:$gid $fs_extension_file");
         system("chmod 640 $fs_extension_file");
         return ($cmd, undef);
@@ -693,6 +709,7 @@ sub confContext {
     }
     else {
         my $mode = $config->returnValue("dialplan context $name mode");
+        my @tmp_extension = $config->listNodes("dialplan context $name extension");
         my $fs_context_example = $fs_example_dir."/context_$mode.xml";
 
         if (!-e $fs_context_file && -e $fs_context_example) {
@@ -708,11 +725,11 @@ sub confContext {
         delete $fs_config->{context}->{'X-PRE-PROCESS'};
         $fs_config->{context}->{name} = $name;
         
-        #my @e = ();
-        #if (scalar(@{$self->{_extension}}) > 0) {
-        #    push @e, { cmd => "include", data => "$name/*.xml" };
-        #    $fs_config->{context}->{'X-PRE-PROCESS'} = \@e;
-        #}
+        my @e = ();
+        if (scalar(@tmp_extension) > 0) {
+            push @e, { cmd => "include", data => "$name/*.xml" };
+            $fs_config->{context}->{'X-PRE-PROCESS'} = \@e;
+        }
         my $fs_config_new = XML::Simple->new(rootname=>'include');
         open my $fh, '>:encoding(UTF-8)', $fs_context_file or die "open($fs_context_file): $!";
         $fs_config_new->XMLout($fs_config, OutputFile => $fh);
