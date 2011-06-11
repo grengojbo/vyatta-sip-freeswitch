@@ -13,6 +13,11 @@ share_perl5_DATA += lib/Vyatta/FreeSWITCH/TestConfig.pm
 curver_DATA = conf/internal.xml
 curver_DATA += conf/internal-ipv6.xml
 curver_DATA += conf/external.xml
+curver_DATA += conf/context_default.xml
+curver_DATA += conf/context_public.xml
+curver_DATA += conf/context_local.xml
+curver_DATA += conf/extension_local.xml
+curver_DATA += conf/extension.xml
 
 cpiop = find  . ! -regex '\(.*~\|.*\.bak\|.*\.swp\|.*\#.*\#\)' -print0 | \
   cpio -0pd

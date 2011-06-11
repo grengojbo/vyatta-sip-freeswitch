@@ -52,6 +52,14 @@ set_cdr() {
 /opt/vyatta/sbin/my_set service sip cdr xml err-log-dir /opt/freeswitch/log/xml_cdr
 /opt/vyatta/sbin/my_set service sip cdr xml delay 10
 }
+# Dialplan
+set_dialplan() {
+/opt/vyatta/sbin/my_set service sip context test extension lalala mode local
+#/opt/vyatta/sbin/my_set service sip context test extension lalala 
+#/opt/vyatta/sbin/my_set service sip context test extension lalala 
+#/opt/vyatta/sbin/my_set service sip context test extension lalala 
+#/opt/vyatta/sbin/my_set service sip context test extension lalala 
+}
 # Profile
 set_profile() {
 /opt/vyatta/sbin/my_set service sip profile test_internal mode internal

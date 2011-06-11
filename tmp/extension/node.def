@@ -1,0 +1,12 @@
+tag:
+priority: 990
+type: txt
+help: Extensions are destinations for a call. This is the meat of FreeSWITCH routing dialed numbers. They are given a name and contain a group of conditions, that if met, will execute a certain actions.
+syntax:expression: pattern $VAR(@) "^[-_a-zA-Z0-9.]+$" ; "invalid extension name \"$VAR(@)\""
+create:expression: exec "sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --context=$VAR(@) --extension=$VAR(@) --action=create"
+end: if [ ${COMMIT_ACTION} = 'DELETE' ]; then
+        sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --context=$VAR(@) --extension=$VAR(@) --action=delete;
+    fi;
+    if [ ${COMMIT_ACTION} = 'ACTIVE' ]; then
+        sudo /opt/vyatta/sbin/vyatta-freeswitch.pl --context=$VAR(@) --extension=$VAR(@) --action=update;
+    fi;

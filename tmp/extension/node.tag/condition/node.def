@@ -1,0 +1,5 @@
+tag:
+type: u32
+help: You can specify certain conditions to be met in order to execute the actions, rule number (1-9999)
+syntax:expression: $VAR(@) > 0 && $VAR(@) <= 9999; "rule number must be between 1 and 9999"
+val_help: u32:1-9999; conditions rule number

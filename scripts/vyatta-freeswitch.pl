@@ -44,7 +44,7 @@ use warnings;
 
 my $fs_conf_dir = '/opt/freeswitch/conf';
 
-my ($conf_name, $show_names, $user_names, $reload_names, $profile_names, $gateway_names, $action, $action_update, $action_delete, $action_create, $action_name, $action_val, $cdr_name, $db_name);
+my ($conf_name, $show_names, $user_names, $reload_names, $profile_names, $gateway_names, $action, $action_update, $action_delete, $action_create, $action_name, $action_val, $cdr_name, $db_name, $extension, $context);
 
 sub usage {
     print <<EOF;
@@ -52,6 +52,7 @@ Usage: $0 --conf=<acl|cli|switch|lang|modules>
        $0 --show=<acl|codecs|lang|allowlang|modules>
        $0 --reload=<xml|dialplan>
        $0 --profile=<name_profile> [--gateway=<name_gateway>] [--action=<create|update|delete>] [--update|--delete|-create=<var_name>]
+       $0 --context=<name_context> [--extension=<name_extension>]
        $0 --cdr=<name_cdr> [--action=<create|update|delete>] [--update|--delete|-create=<var_name>]
        $0 --user=<name_user>
        $0 --db=<odbc_name> [--action=<create|update|delete>] 
@@ -63,6 +64,8 @@ GetOptions("conf=s"  => \$conf_name,
        "show=s"	     => \$show_names,
        "reload=s"	 => \$reload_names,
        "profile=s"	 => \$profile_names,
+       "extension=s" => \$extension,
+       "context=s"	 => \$context,
        "gateway=s"	 => \$gateway_names,
        "user=s"	     => \$user_names,
        "cdr=s"	     => \$cdr_name,
@@ -93,6 +96,8 @@ else {
 fs_conf($conf_name, $action) if ($conf_name);
 fs_show($show_names) if ($show_names);
 fs_profile($profile_names, $action) if ($profile_names && !$gateway_names);
+fs_context($context, $action) if ($context && !$extension);
+fs_extension($extension, $context, $action) if ($context && $extension);
 fs_cdr($cdr_name, $action) if ($cdr_name);
 fs_db($db_name, $action) if ($db_name);
 fs_gateway($profile_names, $gateway_names, $action, $action_name, $action_val) if ($profile_names && $gateway_names);
@@ -114,6 +119,44 @@ sub fs_db {
         print $cmd;
     }
 }    
+sub fs_extension {
+    my ($name, $context, $action) = @_;
+    my $config = new Vyatta::FreeSWITCH::Config;
+    $config->setup();
+    my ($cmd, $err) = $config->get_command() if ($action ne 'delete') ;
+    #print "fs_profile\n";    
+    if (defined($err)) {
+        print STDERR "FreeSWITCH configuration error: $err.\n";
+        exit 1;
+    }
+    my ($res, $er) = $config->confExtension($name, $context, $action);
+    if (defined($er)) {
+        print STDERR "FreeSWITCH configuration profile error: $er.\n";
+        exit 1;
+    }
+    else {
+        print "$res\n";
+    }
+}
+sub fs_context {
+    my ($name, $action) = @_;
+    my $config = new Vyatta::FreeSWITCH::Config;
+    $config->setup();
+    my ($cmd, $err) = $config->get_command() if ($action ne 'delete') ;
+    #print "fs_profile\n";    
+    if (defined($err)) {
+        print STDERR "FreeSWITCH configuration error: $err.\n";
+        exit 1;
+    }
+    my ($res, $er) = $config->confContext($name, $action);
+    if (defined($er)) {
+        print STDERR "FreeSWITCH configuration profile error: $er.\n";
+        exit 1;
+    }
+    else {
+        print "$res\n";
+    }
+}
 sub fs_profile {
     my ($name, $action) = @_;
     my $config = new Vyatta::FreeSWITCH::Config;

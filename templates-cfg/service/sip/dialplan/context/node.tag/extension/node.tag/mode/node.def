@@ -1,0 +1,5 @@
+type: txt
+default: "custom"
+help: Set FreeSWITCH preset dialplan context mode
+syntax:expression: $VAR(@) in "custom", "inbound", "outbound", "local";
+                   "Must be \"custom\", \"inbound\" or \"outbound\", \"local\""

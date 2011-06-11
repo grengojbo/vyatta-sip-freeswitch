@@ -1,0 +1,5 @@
+type: txt
+default: "default"
+help: Set FreeSWITCH preset dialplan context mode
+syntax:expression: $VAR(@) in "default", "public", "local";
+                   "Must be \"default\", or \"public\", \"local\""

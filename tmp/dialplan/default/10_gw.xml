@@ -1,0 +1,31 @@
+<include>
+
+<extension name="lincom_out_ukraine">
+    <condition field="destination_number" expression="^(?:\+|00000|0000|000|00|0|00000380|0000380|000380|00380|0380|380|)(\d{9})$">
+        <action application="set" data="dialed_extension=380$1"/>
+        <action application="export" data="dialed_extension=380$1"/>
+        <action application="set" data="call_timeout=90"/>
+        <action application="nibblebill" data="heartbeat 60"/>
+        <action application="set" data="hangup_after_bridge=true"/>
+        <action application="set" data="continue_on_fail=false"/>
+        <action application="log" data="ERR dialed_extension lincom_out_ukraine ${dialed_extension}"/>
+        <action application="lua" data="dpo.lua"/>
+        <action application="hangup"/>
+    </condition>
+</extension>
+
+<extension name="lincom_out_word">
+    <condition field="destination_number" expression="^(?:\+|00000|0000|000|00|0|)(\d{12}|\d{11}|\d{10})$">
+        <action application="set" data="dialed_extension=$1"/> 
+        <action application="export" data="dialed_extension=$1"/>
+        <action application="set" data="call_timeout=90"/>
+        <action application="nibblebill" data="heartbeat 60"/>
+        <action application="set" data="hangup_after_bridge=true"/>
+        <action application="set" data="continue_on_fail=false"/>
+        <action application="log" data="ERR dialed_extension lincom_out_word ${dialed_extension}"/>
+        <action application="lua" data="dpo.lua"/>
+        <action application="hangup"/>
+    </condition>
+</extension>
+
+</include>
